@@ -32,8 +32,9 @@ import Animated, {
 import * as Haptics from "expo-haptics";
 
 import { playSfx } from "@/audio/sfx";
+import { cutNormal, cutPolygon, extendedCurve, type Cut } from "@/game/geometry";
 import { T } from "@/game/timeline";
-import type { ChopLine, CountryPack, Pt } from "@/game/types";
+import type { CountryPack, Pt } from "@/game/types";
 import { CountUp } from "@/ui/CountUp";
 import type { Theme } from "@/ui/theme";
 import {
@@ -59,25 +60,38 @@ const FAR = 4000;
 const LABEL_W = 84;
 const GRID = 32;
 const GRID_EXTENT = 2400;
+/** Freehand: minimum spacing between recorded stroke points (px) and maximum points kept. */
+const STROKE_STEP = 5;
+const STROKE_MAX = 400;
+
+export type Tool = "line" | "free";
 
 type Props = {
   country: CountryPack;
   theme: Theme;
-  /** After a chop, the line is frozen and the 3D split plays. */
-  chopped: ChopLine | null;
+  /** Straight line with draggable ends, or a freehand stroke. */
+  tool: Tool;
+  /** After a chop, the cut is frozen and the 3D split plays. */
+  chopped: Cut | null;
   /** Fraction of population on side A (for the floating labels). */
   shareA: number | null;
-  perfect: ChopLine | null;
+  perfect: Cut | null;
   /** Fire a small fireworks show at T.SCORE. */
   celebrate: boolean;
-  /** Changing this value clears the line. */
+  /** Changing this value clears the cut. */
   resetKey: number;
-  onLineChange: (line: ChopLine | null) => void;
+  onCutChange: (cut: Cut | null) => void;
 };
 
 const IDENTITY_FINAL: CamFinal = { cx: 0, cy: 0, theta: 0, phi: 0, k: 1, ox: 0, oy: 0 };
 
-export function ChopCanvas({ country, theme, chopped, shareA, perfect, celebrate, resetKey, onLineChange }: Props) {
+function polylinePath(pts: Pt[]): SkPath {
+  const pb = Skia.PathBuilder.Make();
+  pts.forEach((p, i) => (i === 0 ? pb.moveTo(p.x, p.y) : pb.lineTo(p.x, p.y)));
+  return pb.build();
+}
+
+export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, celebrate, resetKey, onCutChange }: Props) {
   const [size, setSize] = useState({ w: 0, h: 0 });
   const fit = useMemo<Fit>(() => {
     const s = Math.max(1, Math.min((size.w - 2 * PAD) / country.width, (size.h - 2 * PAD) / country.height));
@@ -111,30 +125,54 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, celebrate
     return { minor: minor.build(), major: major.build() };
   }, [size]);
 
-  // ---------------- aiming ----------------
+  // ---------------- aiming: straight line ----------------
   const ax = useSharedValue(0);
   const ay = useSharedValue(0);
   const bx = useSharedValue(0);
   const by = useSharedValue(0);
   const lineAlpha = useSharedValue(0);
   const line = useRef<{ a: Pt; b: Pt } | null>(null);
-  const drag = useRef<{ mode: "a" | "b" | "new" | "orbit"; dx: number; dy: number } | null>(null);
+  const drag = useRef<{ mode: "a" | "b" | "new" | "stroke" | "orbit"; dx: number; dy: number } | null>(null);
 
   const setLine = (a: Pt, b: Pt) => {
     line.current = { a, b };
     ax.value = a.x; ay.value = a.y; bx.value = b.x; by.value = b.y;
     lineAlpha.value = 1;
   };
-  const clearLine = () => {
+
+  // ---------------- aiming: freehand stroke ----------------
+  const stroke = useRef<Pt[]>([]);
+  const strokePath = useSharedValue<SkPath>(Skia.Path.Make());
+  const strokeExt = useSharedValue<SkPath>(Skia.Path.Make());
+
+  const setStroke = (pts: Pt[], withExtensions: boolean) => {
+    stroke.current = pts;
+    strokePath.value = polylinePath(pts);
+    if (withExtensions && pts.length > 1) {
+      const ext = extendedCurve(pts, FAR);
+      strokeExt.value = Skia.PathBuilder.Make()
+        .moveTo(ext[0].x, ext[0].y).lineTo(pts[0].x, pts[0].y)
+        .moveTo(pts[pts.length - 1].x, pts[pts.length - 1].y).lineTo(ext[ext.length - 1].x, ext[ext.length - 1].y)
+        .build();
+    } else {
+      strokeExt.value = Skia.Path.Make();
+    }
+    lineAlpha.value = 1;
+  };
+
+  const clearAim = () => {
     line.current = null;
+    stroke.current = [];
+    strokePath.value = Skia.Path.Make();
+    strokeExt.value = Skia.Path.Make();
     lineAlpha.value = 0;
   };
 
   useEffect(() => {
-    clearLine();
-    onLineChange(null);
+    clearAim();
+    onCutChange(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resetKey, country.iso]);
+  }, [resetKey, country.iso, tool]);
 
   const clamp = (p: Pt): Pt => ({ x: Math.max(0, Math.min(size.w, p.x)), y: Math.max(0, Math.min(size.h, p.y)) });
 
@@ -155,41 +193,41 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, celebrate
 
   const scene = useMemo(() => {
     if (!chopped || size.w === 0) return null;
-    const a = toScreen(chopped.a);
-    const b = toScreen(chopped.b);
-    const dx = b.x - a.x, dy = b.y - a.y;
-    const len = Math.hypot(dx, dy) || 1;
-    const d = { x: dx / len, y: dy / len };
-    const n = { x: -d.y, y: d.x }; // side-A normal (same convention as geometry.ts)
-
+    // Side-A region as a Skia path, then boolean ops give the two pieces.
+    const poly = cutPolygon(chopped, FAR / fit.s).map(toScreen);
     const half = Skia.PathBuilder.Make()
-      .addPoly(
-        [
-          Skia.Point(a.x - d.x * FAR, a.y - d.y * FAR),
-          Skia.Point(a.x + d.x * FAR, a.y + d.y * FAR),
-          Skia.Point(a.x + d.x * FAR + n.x * FAR, a.y + d.y * FAR + n.y * FAR),
-          Skia.Point(a.x - d.x * FAR + n.x * FAR, a.y - d.y * FAR + n.y * FAR),
-        ],
-        true,
-      )
+      .addPoly(poly.map((p) => Skia.Point(p.x, p.y)), true)
+      .setFillType(FillType.EvenOdd)
       .build();
     const pieceA = Skia.Path.MakeFromOp(countryPath, half, PathOp.Intersect);
     const pieceB = Skia.Path.MakeFromOp(countryPath, half, PathOp.Difference);
+    const n = cutNormal(chopped, country.points); // B → A, same orientation on screen
 
     // The blade only needs to travel across the country, not the whole screen.
-    let tMin = Infinity, tMax = -Infinity;
-    for (const ring of country.rings) {
-      for (let i = 0; i < ring.length; i += 2) {
-        const t = (fit.ox + ring[i] * fit.s - a.x) * d.x + (fit.oy + ring[i + 1] * fit.s - a.y) * d.y;
-        tMin = Math.min(tMin, t); tMax = Math.max(tMax, t);
+    let blade: Pt[];
+    if (chopped.kind === "line") {
+      const a = toScreen(chopped.line.a), b = toScreen(chopped.line.b);
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const d = { x: dx / len, y: dy / len };
+      let tMin = Infinity, tMax = -Infinity;
+      for (const ring of country.rings) {
+        for (let i = 0; i < ring.length; i += 2) {
+          const t = (fit.ox + ring[i] * fit.s - a.x) * d.x + (fit.oy + ring[i + 1] * fit.s - a.y) * d.y;
+          tMin = Math.min(tMin, t); tMax = Math.max(tMax, t);
+        }
       }
+      blade = [
+        { x: a.x + d.x * (tMin - 30), y: a.y + d.y * (tMin - 30) },
+        { x: a.x + d.x * (tMax + 30), y: a.y + d.y * (tMax + 30) },
+      ];
+    } else {
+      blade = extendedCurve(chopped.pts.map(toScreen), 30);
     }
-    const bladeFrom = { x: a.x + d.x * (tMin - 30), y: a.y + d.y * (tMin - 30) };
-    const bladeTo = { x: a.x + d.x * (tMax + 30), y: a.y + d.y * (tMax + 30) };
 
     const final = finalCamera(country, fit, size.w, size.h, hmax);
     const model = buildColumns(country, fit, chopped, theme.sideA, theme.sideB, hmax);
-    return { a, d, n, pieceA, pieceB, final, model, bladeFrom, bladeTo };
+    return { n, pieceA, pieceB, final, model, bladePath: polylinePath(blade) };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chopped, countryPath, fit, country, theme, hmax]);
 
@@ -285,23 +323,14 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, celebrate
     [sparks, size.w, size.h],
   );
 
-  // Blade sweep: a bright streak whose head runs along the cut.
-  // Plain numbers only: these are captured by UI-thread worklets.
-  const bfx = scene?.bladeFrom.x ?? 0, bfy = scene?.bladeFrom.y ?? 0;
-  const btx = scene?.bladeTo.x ?? 0, bty = scene?.bladeTo.y ?? 0;
-  const snx = scene?.n.x ?? 0, sny = scene?.n.y ?? 0;
-  const bladeHead = useDerivedValue(() => {
-    const u = sweep.value;
-    return { x: bfx + (btx - bfx) * u, y: bfy + (bty - bfy) * u };
-  }, [bfx, bfy, btx, bty]);
-  const bladeTail = useDerivedValue(() => {
-    const u = Math.max(0, sweep.value - 0.45);
-    return { x: bfx + (btx - bfx) * u, y: bfy + (bty - bfy) * u };
-  }, [bfx, bfy, btx, bty]);
-  const bladeOpacity = useDerivedValue(() => (sweep.value < 1 ? 1 : 0));
+  // Blade sweep: a bright streak whose head runs along the cut (works for lines and curves).
+  const bladeStart = useDerivedValue(() => Math.max(0, sweep.value - 0.45));
+  const bladeEnd = useDerivedValue(() => sweep.value);
+  const bladeOpacity = useDerivedValue(() => (sweep.value > 0 && sweep.value < 1 ? 1 : 0));
   const cutGlow = useDerivedValue(() => 1.5 + 4 * flash.value);
 
   // Draw order of the two slabs: whichever is further from the camera goes first.
+  const snx = scene?.n.x ?? 0, sny = scene?.n.y ?? 0;
   const aIsBack = useDerivedValue(() => {
     const c = cam.value;
     return Math.sin(c.theta) * snx + Math.cos(c.theta) * sny < 0 ? 1 : 0;
@@ -317,6 +346,13 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, celebrate
         drag.current = { mode: "orbit", dx: 0, dy: 0 };
         cancelAnimation(orbit);
         orbitStart.current = { orbit: orbit.value, pitch: pitch.value };
+        return;
+      }
+      if (tool === "free") {
+        drag.current = { mode: "stroke", dx: 0, dy: 0 };
+        setStroke([{ x: e.x, y: e.y }], false);
+        Haptics.selectionAsync();
+        playSfx("tap");
         return;
       }
       const l = line.current;
@@ -339,6 +375,13 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, celebrate
         pitch.value = Math.max(-0.6, Math.min(0.3, orbitStart.current.pitch - e.translationY * 0.004));
         return;
       }
+      if (d.mode === "stroke") {
+        const pts = stroke.current;
+        const last = pts[pts.length - 1];
+        const p = clamp({ x: e.x, y: e.y });
+        if (pts.length < STROKE_MAX && Math.hypot(p.x - last.x, p.y - last.y) >= STROKE_STEP) setStroke([...pts, p], false);
+        return;
+      }
       const l = line.current;
       if (!l) return;
       const p = clamp({ x: e.x + d.dx, y: e.y + d.dy });
@@ -353,13 +396,26 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, celebrate
         if (spinning.current) startSpin(); // keep spinning from wherever the player left it
         return;
       }
-      const l = line.current;
-      if (!l || Math.hypot(l.b.x - l.a.x, l.b.y - l.a.y) < MIN_LINE) {
-        clearLine();
-        onLineChange(null);
+      if (d.mode === "stroke") {
+        const pts = stroke.current;
+        let len = 0;
+        for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+        if (pts.length < 3 || len < MIN_LINE * 1.5) {
+          clearAim();
+          onCutChange(null);
+          return;
+        }
+        setStroke(pts, true);
+        onCutChange({ kind: "curve", pts: pts.map(toNorm) });
         return;
       }
-      onLineChange({ a: toNorm(l.a), b: toNorm(l.b) });
+      const l = line.current;
+      if (!l || Math.hypot(l.b.x - l.a.x, l.b.y - l.a.y) < MIN_LINE) {
+        clearAim();
+        onCutChange(null);
+        return;
+      }
+      onCutChange({ kind: "line", line: { a: toNorm(l.a), b: toNorm(l.b) } });
     });
 
   // ---------------- derived drawing values for the aim line ----------------
@@ -376,15 +432,18 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, celebrate
     return { x: bx.value + (dx / len) * FAR, y: by.value + (dy / len) * FAR };
   });
 
-  const perfectGround = useMemo(() => {
+  const perfectPath = useMemo(() => {
     if (!perfect) return null;
-    const a = toScreen(perfect.a), b = toScreen(perfect.b);
-    const dx = b.x - a.x, dy = b.y - a.y;
-    const len = Math.hypot(dx, dy) || 1;
-    return {
-      p1: { x: a.x - (dx / len) * FAR, y: a.y - (dy / len) * FAR },
-      p2: { x: b.x + (dx / len) * FAR, y: b.y + (dy / len) * FAR },
-    };
+    if (perfect.kind === "line") {
+      const a = toScreen(perfect.line.a), b = toScreen(perfect.line.b);
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      return polylinePath([
+        { x: a.x - (dx / len) * FAR, y: a.y - (dy / len) * FAR },
+        { x: b.x + (dx / len) * FAR, y: b.y + (dy / len) * FAR },
+      ]);
+    }
+    return polylinePath(extendedCurve(perfect.pts.map(toScreen), FAR));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [perfect, fit]);
 
@@ -435,37 +494,53 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, celebrate
                     </Group>
                     <Group transform={camT}>
                       {/* Glowing cut left behind by the blade */}
-                      <Line
-                        p1={scene.bladeFrom}
-                        p2={scene.bladeTo}
+                      <Path
+                        path={scene.bladePath}
                         color={theme.blade}
                         style="stroke"
                         strokeWidth={cutGlow}
+                        strokeJoin="round"
                         opacity={flash}
                       >
                         <BlurMask blur={3} style="solid" />
-                      </Line>
-                      {perfectGround && (
-                        <Line p1={perfectGround.p1} p2={perfectGround.p2} color={theme.gold} style="stroke" strokeWidth={2.5}>
+                      </Path>
+                      {perfectPath && (
+                        <Path path={perfectPath} color={theme.gold} style="stroke" strokeWidth={2.5} strokeJoin="round">
                           <DashPathEffect intervals={[10, 6]} />
-                        </Line>
+                        </Path>
                       )}
                     </Group>
                     <Picture picture={picture} />
                     {/* The blade itself */}
                     <Group opacity={bladeOpacity}>
-                      <Line p1={bladeTail} p2={bladeHead} color={theme.blade} style="stroke" strokeWidth={10} strokeCap="round" opacity={0.35}>
+                      <Path
+                        path={scene.bladePath}
+                        start={bladeStart}
+                        end={bladeEnd}
+                        color={theme.blade}
+                        style="stroke"
+                        strokeWidth={10}
+                        strokeCap="round"
+                        strokeJoin="round"
+                        opacity={0.35}
+                      >
                         <BlurMask blur={8} style="normal" />
-                      </Line>
-                      <Line p1={bladeTail} p2={bladeHead} color={theme.blade} style="stroke" strokeWidth={3} strokeCap="round" />
-                      <Circle c={bladeHead} r={5} color={theme.blade}>
-                        <BlurMask blur={4} style="solid" />
-                      </Circle>
+                      </Path>
+                      <Path
+                        path={scene.bladePath}
+                        start={bladeStart}
+                        end={bladeEnd}
+                        color={theme.blade}
+                        style="stroke"
+                        strokeWidth={3}
+                        strokeCap="round"
+                        strokeJoin="round"
+                      />
                     </Group>
                   </>
                 )}
 
-                {!chopped && (
+                {!chopped && tool === "line" && (
                   <Group opacity={lineAlpha}>
                     <Line p1={far1} p2={far2} color={theme.ink} style="stroke" strokeWidth={1.5} opacity={0.3}>
                       <DashPathEffect intervals={[6, 6]} />
@@ -479,6 +554,16 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, celebrate
                     <Circle c={p2} r={HANDLE_R + 1.5} color={theme.inkOnLand} />
                     <Circle c={p2} r={HANDLE_R} color={theme.ink} />
                     <Circle c={p2} r={HANDLE_R - 3.5} color={theme.sideB} />
+                  </Group>
+                )}
+
+                {!chopped && tool === "free" && (
+                  <Group opacity={lineAlpha}>
+                    <Path path={strokeExt} color={theme.ink} style="stroke" strokeWidth={1.5} opacity={0.3}>
+                      <DashPathEffect intervals={[6, 6]} />
+                    </Path>
+                    <Path path={strokePath} color={theme.inkOnLand} style="stroke" strokeWidth={6} strokeCap="round" strokeJoin="round" />
+                    <Path path={strokePath} color={theme.ink} style="stroke" strokeWidth={3} strokeCap="round" strokeJoin="round" />
                   </Group>
                 )}
               </Group>

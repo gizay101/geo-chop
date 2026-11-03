@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,20 +9,24 @@ import { getBest } from "@/store/progress";
 import { useTheme, type Theme } from "@/ui/theme";
 
 const TITLES: Record<string, string> = { countries: "Countries", islands: "Islands" };
+const TOOL_TITLES: Record<string, string> = { free: "Freehand" };
 
 /** Pick a country or island to practise. */
 export default function Browse() {
   const theme = useTheme();
   const s = makeStyles(theme);
-  const { pack = "countries" } = useLocalSearchParams<{ pack?: PackId }>();
-  const entries = entriesFor(pack);
+  const { pack = "countries", tool = "line" } = useLocalSearchParams<{ pack?: PackId; tool?: string }>();
+  // Freehand works on everything: countries, islands and the world.
+  const entries = useMemo(
+    () => (tool === "free" ? [...entriesFor("world"), ...entriesFor("countries"), ...entriesFor("islands")] : entriesFor(pack)),
+    [pack, tool],
+  );
   const [best, setBest] = useState<Record<string, number | null>>({});
 
   useFocusEffect(
     useCallback(() => {
-      setBest(Object.fromEntries(entries.map((e) => [e.iso, getBest(e.iso)])));
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pack]),
+      setBest(Object.fromEntries(entries.map((e) => [e.iso, getBest(e.iso, tool)])));
+    }, [entries, tool]),
   );
 
   return (
@@ -37,7 +41,7 @@ export default function Browse() {
         >
           <Text style={s.back}>‹ Menu</Text>
         </Pressable>
-        <Text style={s.title}>{TITLES[pack] ?? pack}</Text>
+        <Text style={s.title}>{TOOL_TITLES[tool] ?? TITLES[pack] ?? pack}</Text>
         <View style={{ width: 60 }} />
       </View>
       <FlatList
@@ -50,7 +54,7 @@ export default function Browse() {
             <Pressable
               onPress={() => {
                 playSfx("tap");
-                router.push(`/play?mode=single&iso=${item.iso}` as never);
+                router.push(`/play?mode=single&iso=${item.iso}&tool=${tool}` as never);
               }}
               style={({ pressed }) => [s.row, pressed && s.pressed]}
             >

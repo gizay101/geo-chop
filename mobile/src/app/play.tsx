@@ -8,26 +8,29 @@ import { entryFor, flagOf, loadPack } from "@/data/packs";
 import { dailyCountries, puzzleNumber, ROUNDS_PER_DAY } from "@/game/daily";
 import { gradeFor } from "@/game/scoring";
 import { getDaily, saveBest, saveDailyRound, type RoundRecord } from "@/store/progress";
+import type { Tool } from "@/render/ChopCanvas";
 import { RoundView } from "@/ui/RoundView";
 import { useTheme, type Theme } from "@/ui/theme";
 
-/** /play?mode=daily  or  /play?mode=single&iso=JPN */
+/** /play?mode=daily  or  /play?mode=single&iso=JPN[&tool=free] */
 export default function Play() {
-  const { mode = "single", iso = "JPN" } = useLocalSearchParams<{ mode?: string; iso?: string }>();
-  return mode === "daily" ? <Daily /> : <Single iso={iso} />;
+  const { mode = "single", iso = "JPN", tool = "line" } = useLocalSearchParams<{ mode?: string; iso?: string; tool?: Tool }>();
+  return mode === "daily" ? <Daily /> : <Single iso={iso} tool={tool} />;
 }
 
-function Single({ iso }: { iso: string }) {
+function Single({ iso, tool }: { iso: string; tool: Tool }) {
   const country = useMemo(() => loadPack(iso), [iso]);
-  const label = country.pack === "world" ? "The World" : country.pack === "islands" ? "Islands · practice" : "Countries · practice";
+  const where = country.pack === "world" ? "The World" : country.pack === "islands" ? "Islands" : "Countries";
+  const label = tool === "free" ? `Freehand · ${where}` : country.pack === "world" ? where : `${where} · practice`;
   return (
     <RoundView
       country={country}
+      tool={tool}
       label={label}
       allowRetry
       nextLabel="Done ✓"
       onBack={() => router.back()}
-      onChopped={(r) => saveBest(r.iso, r.score)}
+      onChopped={(r) => saveBest(r.iso, r.score, tool)}
       onNext={() => router.back()}
     />
   );
@@ -55,7 +58,7 @@ function Daily() {
       nextLabel={round < ROUNDS_PER_DAY - 1 ? "Next round →" : "See results →"}
       onBack={() => router.back()}
       onChopped={(r) => {
-        const rec: RoundRecord = { iso: r.iso, shareA: r.shareA, error: r.error, score: r.score, line: r.line };
+        const rec: RoundRecord = { iso: r.iso, shareA: r.shareA, error: r.error, score: r.score, cut: r.cut };
         saveDailyRound(no, round, rec, ROUNDS_PER_DAY);
         saveBest(r.iso, r.score);
         setRecords(getDaily(no));

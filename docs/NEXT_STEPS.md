@@ -10,8 +10,8 @@ Written 2026-11-03. **iOS first**; Android follows from the same codebase. This 
 | 2 | **More content (placeholder data):** ~25 countries, an Islands pack, a World chop, and the Daily Chop (5 a day) | building now |
 | 3 | **Local player data:** results, streaks, best per country (on device) | building now |
 | 4 | **Accurate datasets:** GHSL population pipeline replacing the placeholders | next |
-| 5 | **Friends leaderboard backend** (Supabase "Friend Leagues"), §3 | after the decision in §6 |
-| 6 | **Freehand cutting** mode | later |
+| 5 | **Friends leaderboard backend** (Supabase "Friend Leagues"), §3 | ⏸ backburner (2026-11-03): single-player first |
+| 6 | **Freehand cutting** mode | building now |
 | 7 | **Economy mode:** split by GDP | later |
 | 8 | **Billionaires mode** | later |
 | 9 | Game Center (achievements, global board) | optional, v1.1 |

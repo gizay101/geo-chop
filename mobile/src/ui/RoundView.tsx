@@ -6,17 +6,17 @@ import * as Haptics from "expo-haptics";
 
 import { playSfx } from "@/audio/sfx";
 import { flagOf } from "@/data/packs";
-import { lineCrossesLand, perfectLine, splitShare } from "@/game/geometry";
+import { cutCrossesLand, perfectCut, splitShareCut, type Cut } from "@/game/geometry";
 import { gradeFor, scoreFor, type Grade } from "@/game/scoring";
 import { FIREWORKS_MAX_ERROR, T } from "@/game/timeline";
-import type { ChopLine, CountryPack } from "@/game/types";
-import { ChopCanvas } from "@/render/ChopCanvas";
+import type { CountryPack } from "@/game/types";
+import { ChopCanvas, type Tool } from "@/render/ChopCanvas";
 import { CountUp } from "@/ui/CountUp";
 import { useTheme, type Theme } from "@/ui/theme";
 
 export type RoundResult = {
   iso: string;
-  line: ChopLine;
+  cut: Cut;
   shareA: number;
   error: number;
   score: number;
@@ -25,6 +25,8 @@ export type RoundResult = {
 
 type Props = {
   country: CountryPack;
+  /** Straight line (default) or freehand curve. */
+  tool?: Tool;
   /** e.g. "Daily #12 · Round 2 / 5". */
   label: string;
   /** Practice allows re-chopping; the Daily is one chop per round. */
@@ -37,17 +39,18 @@ type Props = {
 };
 
 /** One round: aim, chop, 3D reveal, score. */
-export function RoundView({ country, label, allowRetry, nextLabel, onBack, onChopped, onNext }: Props) {
+export function RoundView({ country, tool = "line", label, allowRetry, nextLabel, onBack, onChopped, onNext }: Props) {
   const theme = useTheme();
-  const [line, setLine] = useState<ChopLine | null>(null);
-  const [result, setResult] = useState<(RoundResult & { perfect: ChopLine }) | null>(null);
+  const [cut, setCut] = useState<Cut | null>(null);
+  const [result, setResult] = useState<RoundResult | null>(null);
+  const [perfect, setPerfect] = useState<Cut | null>(null);
   const [done, setDone] = useState(false);
   const [showPerfect, setShowPerfect] = useState(false);
   const [resetKey, setResetKey] = useState(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  const canChop = !!line && lineCrossesLand(country.rings, line);
-  const onLineChange = useCallback((l: ChopLine | null) => setLine(l), []);
+  const canChop = !!cut && cutCrossesLand(country.rings, cut);
+  const onCutChange = useCallback((c: Cut | null) => setCut(c), []);
 
   const clearTimers = () => {
     timers.current.forEach(clearTimeout);
@@ -56,13 +59,13 @@ export function RoundView({ country, label, allowRetry, nextLabel, onBack, onCho
   useEffect(() => clearTimers, []);
 
   const chop = () => {
-    if (!line || !canChop) return;
-    const shareA = splitShare(country.points, line);
+    if (!cut || !canChop) return;
+    const shareA = splitShareCut(country.points, cut);
     const error = Math.abs(shareA * 100 - 50);
-    const r: RoundResult = { iso: country.iso, line, shareA, error, score: scoreFor(error), grade: gradeFor(error) };
+    const r: RoundResult = { iso: country.iso, cut, shareA, error, score: scoreFor(error), grade: gradeFor(error) };
     playSfx("slice");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setResult({ ...r, perfect: perfectLine(country.points, line) });
+    setResult(r);
     onChopped?.(r);
     timers.current.push(
       setTimeout(() => playSfx("countup"), T.COUNT_START),
@@ -84,7 +87,8 @@ export function RoundView({ country, label, allowRetry, nextLabel, onBack, onCho
     setResult(null);
     setDone(false);
     setShowPerfect(false);
-    setLine(null);
+    setPerfect(null);
+    setCut(null);
     setResetKey((k) => k + 1);
   };
 
@@ -119,12 +123,13 @@ export function RoundView({ country, label, allowRetry, nextLabel, onBack, onCho
         <ChopCanvas
           country={country}
           theme={theme}
-          chopped={result?.line ?? null}
+          tool={tool}
+          chopped={result?.cut ?? null}
           shareA={result?.shareA ?? null}
-          perfect={showPerfect ? result?.perfect ?? null : null}
+          perfect={showPerfect ? perfect : null}
           celebrate={!!result && result.error <= FIREWORKS_MAX_ERROR}
           resetKey={resetKey}
-          onLineChange={onLineChange}
+          onCutChange={onCutChange}
         />
       </View>
 
@@ -133,11 +138,17 @@ export function RoundView({ country, label, allowRetry, nextLabel, onBack, onCho
         {!result ? (
           <>
             <Text style={s.help}>
-              {line
-                ? canChop
-                  ? "Drag the dots to adjust, then chop."
-                  : "Your line has to cross the land."
-                : "Drag across the map to draw your line."}
+              {tool === "free"
+                ? cut
+                  ? canChop
+                    ? "Happy with it? Chop! Or draw again."
+                    : "Your cut has to cross the land."
+                  : "Draw any cut with your finger."
+                : cut
+                  ? canChop
+                    ? "Drag the dots to adjust, then chop."
+                    : "Your line has to cross the land."
+                  : "Drag across the map to draw your line."}
             </Text>
             <Pressable
               onPress={chop}
@@ -171,6 +182,8 @@ export function RoundView({ country, label, allowRetry, nextLabel, onBack, onCho
                   <Pressable
                     onPress={() => {
                       playSfx("tap");
+                      // Computed on demand: for freehand cuts this is a small search.
+                      if (!perfect) setPerfect(perfectCut(country.points, result.cut));
                       setShowPerfect((v) => !v);
                     }}
                     style={({ pressed }) => [s.ghostBtn, pressed && s.pressed]}

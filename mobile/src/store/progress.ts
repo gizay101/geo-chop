@@ -1,9 +1,9 @@
 // Local player data (on device only). docs/NEXT_STEPS.md §2.
 import Storage from "expo-sqlite/kv-store";
 
-import type { ChopLine } from "@/game/types";
+import type { Cut } from "@/game/geometry";
 
-export type RoundRecord = { iso: string; shareA: number; error: number; score: number; line: ChopLine };
+export type RoundRecord = { iso: string; shareA: number; error: number; score: number; cut: Cut };
 
 const readJson = <T,>(key: string, fallback: T): T => {
   try {
@@ -46,12 +46,14 @@ export function getStreak(today: number): { current: number; best: number; playe
   return { current, best, played: done.size };
 }
 
-// ---- best score per country ----
-export function getBest(iso: string): number | null {
-  return readJson<number | null>(`best:${iso}`, null);
+// ---- best score per country (separately for straight and freehand cuts) ----
+const bestKey = (iso: string, tool: string) => (tool === "free" ? `best:free:${iso}` : `best:${iso}`);
+
+export function getBest(iso: string, tool = "line"): number | null {
+  return readJson<number | null>(bestKey(iso, tool), null);
 }
 
-export function saveBest(iso: string, score: number) {
-  const prev = getBest(iso);
-  if (prev === null || score > prev) writeJson(`best:${iso}`, score);
+export function saveBest(iso: string, score: number, tool = "line") {
+  const prev = getBest(iso, tool);
+  if (prev === null || score > prev) writeJson(bestKey(iso, tool), score);
 }

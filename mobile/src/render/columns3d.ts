@@ -6,7 +6,8 @@
 // (painter's) order, entirely on the UI thread.
 import { BlendMode, Skia, VertexMode, type SkCanvas, type SkColor, type SkPoint } from "@shopify/react-native-skia";
 
-import type { ChopLine, CountryPack, Pt } from "@/game/types";
+import { cutDistance, cutNormal, sideTest, type Cut } from "@/game/geometry";
+import type { CountryPack, Pt } from "@/game/types";
 
 /** How far the two pieces drift apart after the chop, in ground px. */
 export const SEPARATION = 12;
@@ -121,16 +122,15 @@ function ringArea(ring: number[]): number {
 export function buildColumns(
   country: CountryPack,
   fit: Fit,
-  line: ChopLine,
+  cut: Cut,
   colorA: string,
   colorB: string,
   hmax: number,
 ): ColumnModel {
-  // Side-A normal (same convention as game/geometry.ts) and line constant, in normalised space.
-  const ndx = line.b.x - line.a.x, ndy = line.b.y - line.a.y;
-  const nlen = Math.hypot(ndx, ndy) || 1;
-  const nx = -ndy / nlen, ny = ndx / nlen;
-  const c = nx * line.a.x + ny * line.a.y;
+  // All in normalised space: side test, distance to the cut (ripple), and B→A push direction.
+  const inA = sideTest(cut);
+  const distTo = cutDistance(cut);
+  const { x: nx, y: ny } = cutNormal(cut, country.points);
 
   const landPx = country.rings.reduce((s, r) => s + ringArea(r), 0) * fit.s * fit.s;
   let r = Math.sqrt(landPx / (TARGET_HEXES * 2.598));
@@ -153,7 +153,7 @@ export function buildColumns(
       const key = q + "," + rr;
       let b = bins.get(key);
       if (!b) bins.set(key, (b = { q, rr, wA: 0, wB: 0 }));
-      if (nx * pts[i] + ny * pts[i + 1] > c) b.wA += pts[i + 2];
+      if (inA(pts[i], pts[i + 1])) b.wA += pts[i + 2];
       else b.wB += pts[i + 2];
     }
     if (bins.size <= MAX_HEXES) break;
@@ -173,7 +173,7 @@ export function buildColumns(
     h.push(Math.max(1.5, hmax * Math.pow(w / wMax, 0.55)));
     // Distance from the chop line (normalised units → only used relatively).
     const nxp = (x - fit.ox) / fit.s, nyp = (y - fit.oy) / fit.s;
-    dist.push(Math.abs(nx * nxp + ny * nyp - c));
+    dist.push(distTo(nxp, nyp));
     if (sd === 0) { sumA += w; axS += x * w; ayS += y * w; } else { sumB += w; bxS += x * w; byS += y * w; }
   }
   const dMax = Math.max(...dist, 1e-9);
