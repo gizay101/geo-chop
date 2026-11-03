@@ -15,6 +15,9 @@ import { saveLastChop } from "@/store/progress";
 import { CountUp } from "@/ui/CountUp";
 import { useTheme, type Theme } from "@/ui/theme";
 
+/** Hidden for now (2026-11-03); the perfect-cut logic stays. */
+const SHOW_PERFECT_BUTTON = false;
+
 export type RoundResult = {
   iso: string;
   cut: Cut;
@@ -187,17 +190,19 @@ export function RoundView({ country, tool = "free", label, allowRetry, nextLabel
             {done ? (
               <Animated.View entering={FadeIn.duration(300)} style={s.actions}>
                 <View style={s.btnRow}>
-                  <Pressable
-                    onPress={() => {
-                      playSfx("tap");
-                      // Computed on demand: for freehand cuts this is a small search.
-                      if (!perfect) setPerfect(perfectCut(country.points, result.cut));
-                      setShowPerfect((v) => !v);
-                    }}
-                    style={({ pressed }) => [s.ghostBtn, pressed && s.pressed]}
-                  >
-                    <Text style={s.ghostText}>{showPerfect ? "Hide" : "Show"} perfect chop</Text>
-                  </Pressable>
+                  {SHOW_PERFECT_BUTTON && (
+                    <Pressable
+                      onPress={() => {
+                        playSfx("tap");
+                        // Computed on demand: for freehand cuts this is a small search.
+                        if (!perfect) setPerfect(perfectCut(country.points, result.cut));
+                        setShowPerfect((v) => !v);
+                      }}
+                      style={({ pressed }) => [s.ghostBtn, pressed && s.pressed]}
+                    >
+                      <Text style={s.ghostText}>{showPerfect ? "Hide" : "Show"} perfect chop</Text>
+                    </Pressable>
+                  )}
                   {allowRetry && (
                     <Pressable onPress={retry} style={({ pressed }) => [s.ghostBtn, pressed && s.pressed]}>
                       <Text style={s.ghostText}>Chop again</Text>

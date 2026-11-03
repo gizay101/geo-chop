@@ -68,6 +68,9 @@ const STROKE_MAX = 400;
 /** Ink per cut: this many times the country's on-screen diagonal, plus room to start/end off the land. */
 const INK_PER_DIAGONAL = 1.5;
 const INK_MARGIN = 80;
+/** The World is very wide on a phone: start zoomed in. Players can pinch between 1x and MAX_ZOOM. */
+const WORLD_ZOOM = 1.7;
+const MAX_ZOOM = 6;
 
 export type Tool = "line" | "free";
 
@@ -98,10 +101,54 @@ function polylinePath(pts: Pt[]): SkPath {
 
 export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, celebrate, resetKey, onCutChange }: Props) {
   const [size, setSize] = useState({ w: 0, h: 0 });
-  const fit = useMemo<Fit>(() => {
+  const baseFit = useMemo<Fit>(() => {
     const s = Math.max(1, Math.min((size.w - 2 * PAD) / country.width, (size.h - 2 * PAD) / country.height));
     return { s, ox: (size.w - s * country.width) / 2, oy: (size.h - s * country.height) / 2 };
   }, [size, country]);
+
+  // Pinch-zoom / two-finger pan while aiming. The gesture moves a live transform; on release it is
+  // committed into `view`, which every drawing and the cut maths use.
+  const [view, setView] = useState<Fit | null>(null);
+  useEffect(() => {
+    if (country.pack !== "world" || size.w === 0) {
+      setView(null);
+      return;
+    }
+    const cx = size.w / 2, cy = size.h / 2;
+    setView({ s: baseFit.s * WORLD_ZOOM, ox: cx + (baseFit.ox - cx) * WORLD_ZOOM, oy: cy + (baseFit.oy - cy) * WORLD_ZOOM });
+  }, [baseFit, country.pack, size.w, size.h]);
+  const fit = view ?? baseFit;
+
+  const gz = useSharedValue(1);
+  const gtx = useSharedValue(0);
+  const gty = useSharedValue(0);
+  const gfx = useSharedValue(0);
+  const gfy = useSharedValue(0);
+  const liveT = useDerivedValue(() => [
+    { translateX: gfx.value + gtx.value },
+    { translateY: gfy.value + gty.value },
+    { scale: gz.value },
+    { translateX: -gfx.value },
+    { translateY: -gfy.value },
+  ]);
+  useEffect(() => {
+    gz.value = 1;
+    gtx.value = 0;
+    gty.value = 0;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view]);
+  const pinching = useRef(false);
+  const clampZoom = (g: number) => Math.max(baseFit.s / fit.s, Math.min((MAX_ZOOM * baseFit.s) / fit.s, g));
+  const commitView = () => {
+    if (!pinching.current) return;
+    pinching.current = false;
+    const g = clampZoom(gz.value);
+    setView({
+      s: fit.s * g,
+      ox: (fit.ox - gfx.value) * g + gfx.value + gtx.value,
+      oy: (fit.oy - gfy.value) * g + gfy.value + gty.value,
+    });
+  };
 
   const toScreen = (p: Pt): Pt => ({ x: fit.ox + p.x * fit.s, y: fit.oy + p.y * fit.s });
   const toNorm = (p: Pt): Pt => ({ x: (p.x - fit.ox) / fit.s, y: (p.y - fit.oy) / fit.s });
@@ -368,9 +415,35 @@ export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, cel
   };
 
   // ---------------- gestures ----------------
+  const pinch = Gesture.Pinch()
+    .runOnJS(true)
+    .enabled(!chopped)
+    .onBegin((e) => {
+      pinching.current = true;
+      drag.current = null;
+      clearAim();
+      onCutChange(null);
+      gfx.value = e.focalX;
+      gfy.value = e.focalY;
+    })
+    .onUpdate((e) => {
+      gz.value = clampZoom(e.scale);
+    })
+    .onFinalize(commitView);
+  const pan2 = Gesture.Pan()
+    .runOnJS(true)
+    .enabled(!chopped)
+    .minPointers(2)
+    .onUpdate((e) => {
+      gtx.value = e.translationX;
+      gty.value = e.translationY;
+    })
+    .onFinalize(commitView);
+
   const pan = Gesture.Pan()
     .runOnJS(true)
     .minDistance(0)
+    .maxPointers(1)
     .onBegin((e) => {
       if (chopped) {
         drag.current = { mode: "orbit", dx: 0, dy: 0 };
@@ -439,7 +512,7 @@ export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, cel
     .onFinalize(() => {
       const d = drag.current;
       drag.current = null;
-      if (!d) return;
+      if (!d || pinching.current) return;
       if (d.mode === "orbit") {
         if (spinning.current) startSpin(); // keep spinning from wherever the player left it
         return;
@@ -515,7 +588,7 @@ export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, cel
   return (
     <View style={styles.fill} onLayout={onLayout}>
       {size.w > 0 && (
-        <GestureDetector gesture={pan}>
+        <GestureDetector gesture={Gesture.Simultaneous(pan, pinch, pan2)}>
           <View style={styles.fill}>
             <Canvas style={styles.fill}>
               <Group transform={shakeT}>
@@ -525,7 +598,9 @@ export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, cel
                 </Group>
 
                 {!scene ? (
-                  <FlatSlab path={countryPath} theme={theme} />
+                  <Group transform={liveT}>
+                    <FlatSlab path={countryPath} theme={theme} />
+                  </Group>
                 ) : (
                   <>
                     <Group opacity={aIsBack}>
@@ -610,7 +685,7 @@ export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, cel
                 )}
 
                 {!chopped && tool === "free" && (
-                  <Group opacity={lineAlpha}>
+                  <Group opacity={lineAlpha} transform={liveT}>
                     <Path path={strokeExt} color={theme.ink} style="stroke" strokeWidth={1.5} opacity={0.3}>
                       <DashPathEffect intervals={[6, 6]} />
                     </Path>

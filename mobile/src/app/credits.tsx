@@ -11,7 +11,7 @@ const CREDITS: [string, string][] = [
   ["Economy", "Kummu et al. 2025, gridded GDP (PPP) v4, 2024. Scientific Data 12:178. CC BY 4.0."],
   ["Billionaires", "Wikidata (CC0). City-level, approximate."],
   ["Maps & city names", "Made with Natural Earth (public domain)."],
-  ["Sounds", "Made for GEO CHOP, plus \"paper rip fast\" by tanweraman (Pixabay)."],
+  ["Sounds", "Made for GEO CHOP, plus \"paper rip fast\" by tanweraman and \"computer mouse click\" by Universfield (Pixabay)."],
 ];
 
 export default function Credits() {

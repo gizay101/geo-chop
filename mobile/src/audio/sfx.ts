@@ -1,8 +1,9 @@
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from "expo-audio";
 
-// Synthesised by pipeline/sfx/make_sfx.py, except slice-rip.mp3 (Pixabay, "paper rip fast" by tanweraman).
+// Synthesised by pipeline/sfx/make_sfx.py, except slice-rip.mp3 ("paper rip fast" by tanweraman) and
+// click.mp3 ("computer mouse click" by Universfield), both from Pixabay.
 const SOURCES = {
-  tap: require("../../assets/sfx/tap.wav"),
+  tap: require("../../assets/sfx/click.mp3"),
   slice: require("../../assets/sfx/slice-rip.mp3"),
   rise: require("../../assets/sfx/rise.wav"),
   countup: require("../../assets/sfx/countup.wav"),
