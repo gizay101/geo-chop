@@ -50,7 +50,7 @@ export default function RoundScreen() {
       Haptics.notificationAsync(
         error < 2.5 ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Warning,
       );
-    }, 900);
+    }, 2100); // after the columns finish rising
   };
 
   const reset = (nextIndex = index) => {
@@ -86,6 +86,7 @@ export default function RoundScreen() {
           country={country}
           theme={theme}
           chopped={result?.line ?? null}
+          shareA={result?.shareA ?? null}
           perfect={showPerfect ? result?.perfect ?? null : null}
           resetKey={resetKey}
           onLineChange={onLineChange}
