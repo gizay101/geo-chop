@@ -9,14 +9,16 @@ export type City = { name: string; pop: number; x: number; y: number };
 /** One country's game data, as baked by the pipeline. */
 export type CountryPack = {
   iso: string;
+  iso2: string;
   name: string;
+  pack: "countries" | "islands" | "world";
+  /** e.g. "Contiguous states": what part of the country is playable. */
+  note: string | null;
   /** True while the population is synthetic prototype data. */
   placeholder: boolean;
   population: number;
   width: number;
   height: number;
-  /** SVG path string in normalised coordinates. */
-  outline: string;
   /** Flat [x0, y0, x1, y1, ...] rings (outer rings and holes). */
   rings: number[][];
   /** Flat [x, y, weight, ...] weighted population points used for scoring. */

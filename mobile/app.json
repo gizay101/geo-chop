@@ -25,7 +25,9 @@
     },
     "plugins": [
       "expo-router",
-      "expo-audio"
+      "expo-audio",
+      "expo-sqlite",
+      "expo-asset"
     ],
     "scheme": "geochop",
     "experiments": {

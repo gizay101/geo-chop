@@ -1,0 +1,57 @@
+// Local player data (on device only). docs/NEXT_STEPS.md §2.
+import Storage from "expo-sqlite/kv-store";
+
+import type { ChopLine } from "@/game/types";
+
+export type RoundRecord = { iso: string; shareA: number; error: number; score: number; line: ChopLine };
+
+const readJson = <T,>(key: string, fallback: T): T => {
+  try {
+    const raw = Storage.getItemSync(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+const writeJson = (key: string, value: unknown) => Storage.setItemSync(key, JSON.stringify(value));
+
+// ---- daily ----
+export function getDaily(no: number): RoundRecord[] {
+  return readJson<RoundRecord[]>(`daily:${no}`, []);
+}
+
+export function saveDailyRound(no: number, round: number, rec: RoundRecord, totalRounds: number) {
+  const rounds = getDaily(no);
+  rounds[round] = rec;
+  writeJson(`daily:${no}`, rounds);
+  if (rounds.filter(Boolean).length === totalRounds) {
+    const done = new Set(readJson<number[]>("dailyDone", []));
+    done.add(no);
+    writeJson("dailyDone", [...done].sort((a, b) => a - b));
+  }
+}
+
+export function getStreak(today: number): { current: number; best: number; played: number } {
+  const done = new Set(readJson<number[]>("dailyDone", []));
+  let current = 0;
+  for (let n = done.has(today) ? today : today - 1; done.has(n); n--) current++;
+  let best = 0;
+  let run = 0;
+  let prev = -Infinity;
+  for (const n of [...done].sort((a, b) => a - b)) {
+    run = n === prev + 1 ? run + 1 : 1;
+    best = Math.max(best, run);
+    prev = n;
+  }
+  return { current, best, played: done.size };
+}
+
+// ---- best score per country ----
+export function getBest(iso: string): number | null {
+  return readJson<number | null>(`best:${iso}`, null);
+}
+
+export function saveBest(iso: string, score: number) {
+  const prev = getBest(iso);
+  if (prev === null || score > prev) writeJson(`best:${iso}`, score);
+}

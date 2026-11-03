@@ -1,198 +1,104 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, { FadeIn } from "react-native-reanimated";
+import React, { useCallback, useState } from "react";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { router, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as Haptics from "expo-haptics";
 
 import { playSfx } from "@/audio/sfx";
-import { COUNTRIES } from "@/data/countries";
-import { lineCrossesLand, perfectLine, splitShare } from "@/game/geometry";
-import { gradeFor, scoreFor, type Grade } from "@/game/scoring";
-import { FIREWORKS_MAX_ERROR, T } from "@/game/timeline";
-import type { ChopLine } from "@/game/types";
-import { ChopCanvas } from "@/render/ChopCanvas";
-import { CountUp } from "@/ui/CountUp";
+import { entriesFor } from "@/data/packs";
+import { puzzleNumber, ROUNDS_PER_DAY } from "@/game/daily";
+import { getDaily, getStreak } from "@/store/progress";
 import { useTheme, type Theme } from "@/ui/theme";
 
-type Result = {
-  line: ChopLine;
-  shareA: number;
-  error: number;
-  score: number;
-  grade: Grade;
-  perfect: ChopLine;
-};
+type Tile = { emoji: string; title: string; subtitle: string; href?: string; soon?: string };
 
-/** Prototype round screen: one country, one chop. */
-export default function RoundScreen() {
+export default function MainMenu() {
   const theme = useTheme();
-  const [index, setIndex] = useState(0);
-  const [line, setLine] = useState<ChopLine | null>(null);
-  const [result, setResult] = useState<Result | null>(null);
-  const [done, setDone] = useState(false);
-  const [showPerfect, setShowPerfect] = useState(false);
-  const [resetKey, setResetKey] = useState(0);
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  const country = COUNTRIES[index];
-  const canChop = !!line && lineCrossesLand(country.rings, line);
-
-  const onLineChange = useCallback((l: ChopLine | null) => setLine(l), []);
-
-  const clearTimers = () => {
-    timers.current.forEach(clearTimeout);
-    timers.current = [];
-  };
-  useEffect(() => clearTimers, []);
-
-  const chop = () => {
-    if (!line || !canChop) return;
-    const shareA = splitShare(country.points, line);
-    const error = Math.abs(shareA * 100 - 50);
-    playSfx("slice");
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setResult({
-      line,
-      shareA,
-      error,
-      score: scoreFor(error),
-      grade: gradeFor(error),
-      perfect: perfectLine(country.points, line),
-    });
-    timers.current.push(
-      setTimeout(() => playSfx("countup"), T.COUNT_START),
-      setTimeout(() => {
-        setDone(true);
-        if (error <= FIREWORKS_MAX_ERROR) {
-          playSfx("success");
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } else {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-        }
-      }, T.SCORE),
-    );
-  };
-
-  const reset = (nextIndex = index) => {
-    clearTimers();
-    playSfx("tap");
-    setResult(null);
-    setDone(false);
-    setShowPerfect(false);
-    setLine(null);
-    setIndex(nextIndex);
-    setResetKey((k) => k + 1);
-  };
-
   const s = makeStyles(theme);
+  const no = puzzleNumber();
+  const [daily, setDaily] = useState(() => getDaily(no));
+  const [streak, setStreak] = useState(() => getStreak(no));
+
+  // Refresh progress whenever we come back to the menu.
+  useFocusEffect(
+    useCallback(() => {
+      setDaily(getDaily(no));
+      setStreak(getStreak(no));
+    }, [no]),
+  );
+
+  const played = daily.filter(Boolean).length;
+  const finished = played === ROUNDS_PER_DAY;
+  const total = daily.reduce((sum, r) => sum + (r?.score ?? 0), 0);
+
+  const go = (href: string) => {
+    playSfx("tap");
+    router.push(href as never);
+  };
+
+  const tiles: Tile[] = [
+    { emoji: "🗺️", title: "Countries", subtitle: `${entriesFor("countries").length} to chop`, href: "/browse?pack=countries" },
+    { emoji: "🏝️", title: "Islands", subtitle: `${entriesFor("islands").length} small islands`, href: "/browse?pack=islands" },
+    { emoji: "🌍", title: "The World", subtitle: "Split humanity in half", href: "/play?mode=single&iso=WLD" },
+    { emoji: "🏆", title: "Friends League", subtitle: "Private leaderboards", soon: "Invite friends with a link and compete on the daily. Coming soon." },
+    { emoji: "✍️", title: "Freehand", subtitle: "Draw any shape", soon: "Cut with a curve instead of a straight line. Coming soon." },
+    { emoji: "💰", title: "Economy", subtitle: "Split the GDP", soon: "Chop a country's economy in half, using gridded GDP data. Coming soon." },
+    { emoji: "💎", title: "Billionaires", subtitle: "Where the money lives", soon: "Split a country's billionaires in half (city-level data). Coming soon." },
+  ];
 
   return (
     <SafeAreaView style={s.screen} edges={["top", "bottom"]}>
-      <View style={s.header}>
-        <Text style={s.logo}>
-          GEO <Text style={{ color: theme.sideA }}>CH</Text>
-          <Text style={{ color: theme.sideB }}>OP</Text>
-        </Text>
-        <Text style={s.round}>
-          {index + 1} / {COUNTRIES.length}
-        </Text>
-      </View>
+      <ScrollView contentContainerStyle={s.content}>
+        <View style={s.hero}>
+          <Text style={s.logo}>
+            GEO <Text style={{ color: theme.sideA }}>CH</Text>
+            <Text style={{ color: theme.sideB }}>OP</Text>
+          </Text>
+          <Text style={s.tagline}>Measure twice, chop once.</Text>
+        </View>
 
-      <View style={s.titleRow}>
-        <Text style={s.country}>{country.name}</Text>
-        <Text style={s.goal}>Chop the population in half</Text>
-        {country.placeholder && <Text style={s.placeholder}>Prototype · placeholder population data</Text>}
-      </View>
+        <Pressable onPress={() => go("/play?mode=daily")} style={({ pressed }) => [s.daily, pressed && s.pressed]}>
+          <View style={s.dailyTop}>
+            <Text style={s.dailyKicker}>DAILY CHOP #{no}</Text>
+            <Text style={s.streak}>🔥 {streak.current}</Text>
+          </View>
+          <Text style={s.dailyTitle}>{finished ? "Done for today" : played > 0 ? "Keep going" : "Today's 5 countries"}</Text>
+          <Text style={s.dailySub}>
+            {finished
+              ? `${total.toFixed(1)} / ${ROUNDS_PER_DAY * 100} · tap to see & share`
+              : played > 0
+                ? `${played} of ${ROUNDS_PER_DAY} chopped`
+                : "Same puzzle for everyone. One chop per country."}
+          </Text>
+          <View style={s.dailyBtn}>
+            <Text style={s.dailyBtnText}>{finished ? "View results" : played > 0 ? "Resume" : "Play"}</Text>
+          </View>
+        </Pressable>
 
-      <View style={s.canvas}>
-        <ChopCanvas
-          country={country}
-          theme={theme}
-          chopped={result?.line ?? null}
-          shareA={result?.shareA ?? null}
-          perfect={showPerfect ? result?.perfect ?? null : null}
-          celebrate={!!result && result.error <= FIREWORKS_MAX_ERROR}
-          resetKey={resetKey}
-          onLineChange={onLineChange}
-        />
-      </View>
-
-      {/* Fixed height so the canvas never resizes mid-animation. */}
-      <View style={s.bottom}>
-        {!result ? (
-          <>
-            <Text style={s.help}>
-              {line
-                ? canChop
-                  ? "Drag the dots to adjust, then chop."
-                  : "Your line has to cross the country."
-                : "Drag across the map to draw your line."}
-            </Text>
+        <View style={s.grid}>
+          {tiles.map((t) => (
             <Pressable
-              onPress={chop}
-              disabled={!canChop}
-              style={({ pressed }) => [s.chopBtn, !canChop && s.btnDisabled, pressed && s.pressed]}
+              key={t.title}
+              onPress={() => {
+                if (t.href) go(t.href);
+                else {
+                  playSfx("tap");
+                  Alert.alert(t.title, t.soon);
+                }
+              }}
+              style={({ pressed }) => [s.tile, t.soon && s.tileSoon, pressed && s.pressed]}
             >
-              <Text style={s.chopText}>CHOP 🔪</Text>
+              <Text style={s.tileEmoji}>{t.emoji}</Text>
+              <Text style={s.tileTitle}>{t.title}</Text>
+              <Text style={s.tileSub}>{t.subtitle}</Text>
+              {t.soon && <Text style={s.soonBadge}>SOON</Text>}
             </Pressable>
-          </>
-        ) : (
-          <Animated.View entering={FadeIn.delay(T.COUNT_START - 150).duration(250)} style={s.resultBox}>
-            <View style={s.splitRow}>
-              <CountUp
-                to={result.shareA * 100}
-                suffix="%"
-                delay={T.COUNT_START}
-                duration={T.COUNT_DURATION}
-                style={[s.pct, { color: theme.sideA }]}
-              />
-              <Text style={s.vs}>|</Text>
-              <CountUp
-                to={100 - result.shareA * 100}
-                suffix="%"
-                delay={T.COUNT_START}
-                duration={T.COUNT_DURATION}
-                style={[s.pct, { color: theme.sideB }]}
-              />
-            </View>
-            <View style={s.scoreRow}>
-              <CountUp to={result.score} delay={T.COUNT_START} duration={T.COUNT_DURATION} style={s.scoreNum} />
-              <Text style={s.scoreOf}> / 100</Text>
-              {done && (
-                <Animated.Text entering={FadeIn.duration(300)} style={s.grade}>
-                  {"  "}
-                  {result.grade.emoji} {result.grade.name}
-                  <Text style={s.muted}>  ({result.error.toFixed(1)}% off)</Text>
-                </Animated.Text>
-              )}
-            </View>
-            {done ? (
-              <Animated.View entering={FadeIn.duration(300)} style={s.actions}>
-                <View style={s.btnRow}>
-                  <Pressable
-                    onPress={() => {
-                      playSfx("tap");
-                      setShowPerfect((v) => !v);
-                    }}
-                    style={({ pressed }) => [s.ghostBtn, pressed && s.pressed]}
-                  >
-                    <Text style={s.ghostText}>{showPerfect ? "Hide" : "Show"} perfect chop</Text>
-                  </Pressable>
-                  <Pressable onPress={() => reset()} style={({ pressed }) => [s.ghostBtn, pressed && s.pressed]}>
-                    <Text style={s.ghostText}>Chop again</Text>
-                  </Pressable>
-                </View>
-                <Pressable
-                  onPress={() => reset((index + 1) % COUNTRIES.length)}
-                  style={({ pressed }) => [s.chopBtn, pressed && s.pressed]}
-                >
-                  <Text style={s.chopText}>Next country →</Text>
-                </Pressable>
-              </Animated.View>
-            ) : null}
-          </Animated.View>
-        )}
-      </View>
+          ))}
+        </View>
+
+        <Text style={s.footer}>
+          Best streak {streak.best} · {streak.played} dailies played{"\n"}Prototype · placeholder population data
+        </Text>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -200,41 +106,45 @@ export default function RoundScreen() {
 const makeStyles = (t: Theme) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: t.paper },
-    header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 20, paddingTop: 8 },
-    logo: { fontSize: 22, fontWeight: "900", letterSpacing: 1, color: t.ink },
-    round: { fontSize: 14, fontWeight: "700", color: t.muted },
-    titleRow: { alignItems: "center", paddingTop: 14 },
-    country: { fontSize: 30, fontWeight: "900", color: t.ink },
-    goal: {
-      marginTop: 6,
-      fontSize: 14,
-      fontWeight: "700",
-      color: t.ink,
+    content: { padding: 20, gap: 18 },
+    hero: { alignItems: "center", paddingTop: 12, paddingBottom: 4 },
+    logo: { fontSize: 46, fontWeight: "900", letterSpacing: 2, color: t.ink },
+    tagline: { marginTop: 2, color: t.muted, fontSize: 14, fontWeight: "600" },
+    daily: { backgroundColor: t.card, borderRadius: 22, padding: 20, gap: 6, borderWidth: 1, borderColor: t.gridMajor },
+    dailyTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+    dailyKicker: { color: t.gold, fontWeight: "900", letterSpacing: 1.5, fontSize: 13 },
+    streak: { color: t.ink, fontWeight: "800", fontSize: 15 },
+    dailyTitle: { color: t.ink, fontSize: 26, fontWeight: "900" },
+    dailySub: { color: t.muted, fontSize: 14 },
+    dailyBtn: { marginTop: 10, backgroundColor: t.sideA, borderRadius: 14, paddingVertical: 14, alignItems: "center" },
+    dailyBtnText: { color: "#FFFFFF", fontWeight: "900", fontSize: 18, letterSpacing: 1 },
+    grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+    tile: {
+      width: "47.9%",
       backgroundColor: t.card,
-      paddingHorizontal: 12,
-      paddingVertical: 5,
-      borderRadius: 999,
+      borderRadius: 18,
+      padding: 16,
+      gap: 2,
+      borderWidth: 1,
+      borderColor: t.gridMajor,
+    },
+    tileSoon: { opacity: 0.55 },
+    tileEmoji: { fontSize: 28, marginBottom: 6 },
+    tileTitle: { color: t.ink, fontWeight: "900", fontSize: 17 },
+    tileSub: { color: t.muted, fontSize: 13 },
+    soonBadge: {
+      position: "absolute",
+      top: 12,
+      right: 12,
+      color: t.paper,
+      backgroundColor: t.muted,
+      fontSize: 10,
+      fontWeight: "900",
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 6,
       overflow: "hidden",
     },
-    placeholder: { marginTop: 6, fontSize: 11, color: t.muted },
-    canvas: { flex: 1 },
-    bottom: { height: 214, paddingHorizontal: 20, paddingBottom: 12, gap: 10, justifyContent: "flex-end" },
-    resultBox: { gap: 8 },
-    actions: { gap: 10 },
-    help: { textAlign: "center", color: t.muted, fontSize: 14 },
-    chopBtn: { backgroundColor: t.ink, borderRadius: 16, paddingVertical: 16, alignItems: "center" },
-    chopText: { color: t.paper, fontSize: 20, fontWeight: "900", letterSpacing: 1 },
-    btnDisabled: { opacity: 0.3 },
-    pressed: { transform: [{ scale: 0.97 }], opacity: 0.85 },
-    splitRow: { flexDirection: "row", justifyContent: "center", alignItems: "baseline", gap: 14 },
-    pct: { fontSize: 40, fontWeight: "900", fontVariant: ["tabular-nums"] },
-    vs: { fontSize: 32, color: t.muted },
-    scoreRow: { flexDirection: "row", justifyContent: "center", alignItems: "baseline", flexWrap: "wrap" },
-    scoreNum: { fontSize: 22, fontWeight: "900", color: t.gold, fontVariant: ["tabular-nums"] },
-    scoreOf: { fontSize: 16, fontWeight: "700", color: t.muted },
-    grade: { fontSize: 16, fontWeight: "800", color: t.ink },
-    muted: { color: t.muted, fontWeight: "500", fontSize: 13 },
-    btnRow: { flexDirection: "row", gap: 10 },
-    ghostBtn: { flex: 1, borderWidth: 2, borderColor: t.ink, borderRadius: 14, paddingVertical: 10, alignItems: "center" },
-    ghostText: { color: t.ink, fontWeight: "800" },
+    pressed: { transform: [{ scale: 0.98 }], opacity: 0.85 },
+    footer: { textAlign: "center", color: t.muted, fontSize: 12, lineHeight: 18, marginTop: 4 },
   });
