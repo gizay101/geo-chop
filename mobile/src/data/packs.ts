@@ -15,10 +15,28 @@ export function loadPack(iso: string, pack: PackId = "countries"): CountryPack {
   if (!p) {
     const load = LOADERS[key];
     if (!load) throw new Error(`Unknown pack: ${key}`);
-    p = load();
+    p = decode(load());
     cache.set(key, p);
   }
   return p;
+}
+
+/** Packs ship with integer coordinates (0..q) to keep the app small; the game works in 0..1 floats. */
+function decode(raw: CountryPack & { q?: number }): CountryPack {
+  const q = raw.q;
+  if (!q) return raw;
+  const s = 1 / q;
+  const points = raw.points.slice();
+  for (let i = 0; i < points.length; i += 3) {
+    points[i] *= s;
+    points[i + 1] *= s;
+  }
+  return {
+    ...raw,
+    rings: raw.rings.map((r) => r.map((v) => v * s)),
+    points,
+    cities: raw.cities.map((c) => ({ ...c, x: c.x * s, y: c.y * s })),
+  };
 }
 
 export const entriesFor = (pack: PackId) =>

@@ -6,450 +6,1556 @@
   "points": 135,
   "total": 232
  },
+ "countries/AFG": {
+  "cells": 71124,
+  "max_err_pp": 0.15,
+  "mean_err_pp": 0.0359,
+  "points": 4001,
+  "total": 44182389
+ },
+ "countries/AGO": {
+  "cells": 297147,
+  "max_err_pp": 0.252,
+  "mean_err_pp": 0.0334,
+  "points": 4001,
+  "total": 36744555
+ },
+ "countries/ALB": {
+  "cells": 23411,
+  "max_err_pp": 0.182,
+  "mean_err_pp": 0.0163,
+  "points": 4000,
+  "total": 2758124
+ },
+ "countries/AND": {
+  "cells": 7689,
+  "max_err_pp": 0.134,
+  "mean_err_pp": 0.0167,
+  "points": 4001,
+  "total": 79191
+ },
+ "countries/ARE": {
+  "cells": 23680,
+  "max_err_pp": 0.092,
+  "mean_err_pp": 0.0182,
+  "points": 4000,
+  "total": 8693464
+ },
  "countries/ARG": {
-  "cells": 572907,
-  "max_err_pp": 0.143,
-  "mean_err_pp": 0.0286,
-  "points": 6002,
-  "total": 45995116
+  "cells": 572062,
+  "max_err_pp": 0.18,
+  "mean_err_pp": 0.0386,
+  "points": 4002,
+  "total": 45851246
+ },
+ "countries/ARM": {
+  "cells": 9661,
+  "max_err_pp": 0.085,
+  "mean_err_pp": 0.0125,
+  "points": 4000,
+  "total": 2762530
+ },
+ "countries/ATG": {
+  "cells": 19103,
+  "max_err_pp": 0.162,
+  "mean_err_pp": 0.0398,
+  "points": 4001,
+  "total": 85222
  },
  "countries/AUS": {
   "cells": 643475,
-  "max_err_pp": 0.117,
-  "mean_err_pp": 0.0261,
-  "points": 6000,
+  "max_err_pp": 0.164,
+  "mean_err_pp": 0.0365,
+  "points": 4001,
   "total": 26233178
  },
- "countries/BRA": {
-  "cells": 2896415,
-  "max_err_pp": 0.168,
+ "countries/AUT": {
+  "cells": 101378,
+  "max_err_pp": 0.261,
+  "mean_err_pp": 0.0379,
+  "points": 4002,
+  "total": 9081811
+ },
+ "countries/AZE": {
+  "cells": 41955,
+  "max_err_pp": 0.227,
   "mean_err_pp": 0.0337,
-  "points": 6001,
-  "total": 212076732
+  "points": 4000,
+  "total": 10339031
+ },
+ "countries/BDI": {
+  "cells": 27595,
+  "max_err_pp": 0.197,
+  "mean_err_pp": 0.0399,
+  "points": 4001,
+  "total": 13920113
+ },
+ "countries/BEL": {
+  "cells": 49735,
+  "max_err_pp": 0.278,
+  "mean_err_pp": 0.0451,
+  "points": 4001,
+  "total": 11813741
+ },
+ "countries/BEN": {
+  "cells": 97194,
+  "max_err_pp": 0.175,
+  "mean_err_pp": 0.0371,
+  "points": 4000,
+  "total": 14594672
+ },
+ "countries/BFA": {
+  "cells": 239314,
+  "max_err_pp": 0.221,
+  "mean_err_pp": 0.0445,
+  "points": 4000,
+  "total": 24447291
+ },
+ "countries/BGD": {
+  "cells": 149431,
+  "max_err_pp": 0.169,
+  "mean_err_pp": 0.0457,
+  "points": 4002,
+  "total": 172483551
+ },
+ "countries/BGR": {
+  "cells": 66869,
+  "max_err_pp": 0.165,
+  "mean_err_pp": 0.0342,
+  "points": 4002,
+  "total": 6552789
+ },
+ "countries/BHR": {
+  "cells": 50504,
+  "max_err_pp": 0.216,
+  "mean_err_pp": 0.0431,
+  "points": 4000,
+  "total": 1314053
+ },
+ "countries/BHS": {
+  "cells": 69676,
+  "max_err_pp": 0.256,
+  "mean_err_pp": 0.0281,
+  "points": 4002,
+  "total": 330730
+ },
+ "countries/BIH": {
+  "cells": 46526,
+  "max_err_pp": 0.265,
+  "mean_err_pp": 0.0369,
+  "points": 4000,
+  "total": 3198515
+ },
+ "countries/BLR": {
+  "cells": 145507,
+  "max_err_pp": 0.214,
+  "mean_err_pp": 0.0332,
+  "points": 4001,
+  "total": 9420940
+ },
+ "countries/BLZ": {
+  "cells": 114713,
+  "max_err_pp": 0.196,
+  "mean_err_pp": 0.0339,
+  "points": 4001,
+  "total": 362264
+ },
+ "countries/BOL": {
+  "cells": 150433,
+  "max_err_pp": 0.155,
+  "mean_err_pp": 0.0341,
+  "points": 4001,
+  "total": 12640183
+ },
+ "countries/BRA": {
+  "cells": 2889646,
+  "max_err_pp": 0.19,
+  "mean_err_pp": 0.0427,
+  "points": 4001,
+  "total": 211368657
+ },
+ "countries/BRB": {
+  "cells": 32636,
+  "max_err_pp": 0.213,
+  "mean_err_pp": 0.0329,
+  "points": 6000,
+  "total": 256894
+ },
+ "countries/BRN": {
+  "cells": 1556,
+  "max_err_pp": 0.141,
+  "mean_err_pp": 0.0007,
+  "points": 1556,
+  "total": 440828
+ },
+ "countries/BTN": {
+  "cells": 9775,
+  "max_err_pp": 0.092,
+  "mean_err_pp": 0.0188,
+  "points": 4000,
+  "total": 985814
+ },
+ "countries/BWA": {
+  "cells": 98054,
+  "max_err_pp": 0.231,
+  "mean_err_pp": 0.0263,
+  "points": 4000,
+  "total": 2721528
+ },
+ "countries/CAF": {
+  "cells": 56795,
+  "max_err_pp": 0.195,
+  "mean_err_pp": 0.0312,
+  "points": 4000,
+  "total": 6083689
  },
  "countries/CAN": {
-  "cells": 2667986,
-  "max_err_pp": 0.163,
-  "mean_err_pp": 0.0256,
-  "points": 6001,
-  "total": 37274702
+  "cells": 711367,
+  "max_err_pp": 0.189,
+  "mean_err_pp": 0.0356,
+  "points": 4002,
+  "total": 29628892
+ },
+ "countries/CHE": {
+  "cells": 50858,
+  "max_err_pp": 0.23,
+  "mean_err_pp": 0.0438,
+  "points": 4002,
+  "total": 8911427
  },
  "countries/CHL": {
   "cells": 146525,
-  "max_err_pp": 0.12,
-  "mean_err_pp": 0.0187,
-  "points": 6001,
+  "max_err_pp": 0.188,
+  "mean_err_pp": 0.0311,
+  "points": 4001,
   "total": 19344850
  },
  "countries/CHN": {
-  "cells": 3908157,
-  "max_err_pp": 0.173,
-  "mean_err_pp": 0.0353,
-  "points": 6000,
-  "total": 1404649300
+  "cells": 3878174,
+  "max_err_pp": 0.217,
+  "mean_err_pp": 0.0488,
+  "points": 4001,
+  "total": 1392004379
+ },
+ "countries/CIV": {
+  "cells": 201582,
+  "max_err_pp": 0.208,
+  "mean_err_pp": 0.046,
+  "points": 4001,
+  "total": 29654949
+ },
+ "countries/CMR": {
+  "cells": 124515,
+  "max_err_pp": 0.162,
+  "mean_err_pp": 0.0315,
+  "points": 4001,
+  "total": 29700930
+ },
+ "countries/COD": {
+  "cells": 500789,
+  "max_err_pp": 0.234,
+  "mean_err_pp": 0.0417,
+  "points": 4001,
+  "total": 108373786
+ },
+ "countries/COG": {
+  "cells": 28206,
+  "max_err_pp": 0.594,
+  "mean_err_pp": 0.0035,
+  "points": 8002,
+  "total": 6549063
  },
  "countries/COL": {
   "cells": 304702,
-  "max_err_pp": 0.112,
-  "mean_err_pp": 0.0241,
-  "points": 6000,
+  "max_err_pp": 0.145,
+  "mean_err_pp": 0.0381,
+  "points": 4000,
   "total": 51927211
+ },
+ "countries/COM": {
+  "cells": 26554,
+  "max_err_pp": 0.266,
+  "mean_err_pp": 0.0184,
+  "points": 4002,
+  "total": 789618
+ },
+ "countries/CPV": {
+  "cells": 75386,
+  "max_err_pp": 0.126,
+  "mean_err_pp": 0.0267,
+  "points": 4002,
+  "total": 557522
+ },
+ "countries/CRI": {
+  "cells": 31325,
+  "max_err_pp": 0.191,
+  "mean_err_pp": 0.0244,
+  "points": 4002,
+  "total": 5231131
+ },
+ "countries/CUB": {
+  "cells": 33561,
+  "max_err_pp": 0.115,
+  "mean_err_pp": 0.0223,
+  "points": 4001,
+  "total": 10797161
+ },
+ "countries/CYP": {
+  "cells": 3929,
+  "max_err_pp": 0.141,
+  "mean_err_pp": 0.0005,
+  "points": 3929,
+  "total": 792289
+ },
+ "countries/CZE": {
+  "cells": 94151,
+  "max_err_pp": 0.267,
+  "mean_err_pp": 0.0502,
+  "points": 4001,
+  "total": 10464669
  },
  "countries/DEU": {
   "cells": 493125,
-  "max_err_pp": 0.16,
-  "mean_err_pp": 0.0335,
-  "points": 6000,
+  "max_err_pp": 0.288,
+  "mean_err_pp": 0.0457,
+  "points": 4002,
   "total": 83092940
+ },
+ "countries/DJI": {
+  "cells": 79738,
+  "max_err_pp": 0.132,
+  "mean_err_pp": 0.0276,
+  "points": 4001,
+  "total": 902887
+ },
+ "countries/DMA": {
+  "cells": 10591,
+  "max_err_pp": 0.35,
+  "mean_err_pp": 0.0037,
+  "points": 8000,
+  "total": 60996
+ },
+ "countries/DNK": {
+  "cells": 74578,
+  "max_err_pp": 0.176,
+  "mean_err_pp": 0.0357,
+  "points": 4000,
+  "total": 5384124
+ },
+ "countries/DOM": {
+  "cells": 31244,
+  "max_err_pp": 0.135,
+  "mean_err_pp": 0.0228,
+  "points": 4001,
+  "total": 11460582
+ },
+ "countries/DZA": {
+  "cells": 308283,
+  "max_err_pp": 0.2,
+  "mean_err_pp": 0.0461,
+  "points": 4001,
+  "total": 45878723
+ },
+ "countries/ECU": {
+  "cells": 98431,
+  "max_err_pp": 0.228,
+  "mean_err_pp": 0.0361,
+  "points": 4002,
+  "total": 17906828
  },
  "countries/EGY": {
   "cells": 133827,
-  "max_err_pp": 0.145,
-  "mean_err_pp": 0.026,
-  "points": 6001,
+  "max_err_pp": 0.214,
+  "mean_err_pp": 0.0381,
+  "points": 4002,
   "total": 113922615
+ },
+ "countries/ERI": {
+  "cells": 33688,
+  "max_err_pp": 0.296,
+  "mean_err_pp": 0.0235,
+  "points": 4001,
+  "total": 3958414
  },
  "countries/ESP": {
   "cells": 415282,
-  "max_err_pp": 0.123,
-  "mean_err_pp": 0.0279,
-  "points": 6002,
+  "max_err_pp": 0.227,
+  "mean_err_pp": 0.0407,
+  "points": 4000,
   "total": 43340508
+ },
+ "countries/EST": {
+  "cells": 53587,
+  "max_err_pp": 0.105,
+  "mean_err_pp": 0.0182,
+  "points": 4000,
+  "total": 1252980
  },
  "countries/ETH": {
   "cells": 652649,
-  "max_err_pp": 0.142,
-  "mean_err_pp": 0.0381,
-  "points": 6001,
+  "max_err_pp": 0.174,
+  "mean_err_pp": 0.0496,
+  "points": 4002,
   "total": 131986608
+ },
+ "countries/FIN": {
+  "cells": 223348,
+  "max_err_pp": 0.166,
+  "mean_err_pp": 0.036,
+  "points": 4000,
+  "total": 5325972
+ },
+ "countries/FJI": {
+  "cells": 6932,
+  "max_err_pp": 0.136,
+  "mean_err_pp": 0.0076,
+  "points": 4001,
+  "total": 852478
  },
  "countries/FRA": {
   "cells": 729415,
-  "max_err_pp": 0.181,
-  "mean_err_pp": 0.0333,
-  "points": 6000,
+  "max_err_pp": 0.257,
+  "mean_err_pp": 0.0449,
+  "points": 4001,
   "total": 63525230
+ },
+ "countries/FSM": {
+  "cells": 8861,
+  "max_err_pp": 0.233,
+  "mean_err_pp": 0.0095,
+  "points": 4000,
+  "total": 54006
+ },
+ "countries/GAB": {
+  "cells": 10266,
+  "max_err_pp": 0.136,
+  "mean_err_pp": 0.0038,
+  "points": 4002,
+  "total": 2267268
  },
  "countries/GBR": {
   "cells": 343541,
   "max_err_pp": 0.222,
-  "mean_err_pp": 0.0321,
+  "mean_err_pp": 0.0322,
   "points": 6002,
   "total": 65991080
  },
+ "countries/GEO": {
+  "cells": 36758,
+  "max_err_pp": 0.29,
+  "mean_err_pp": 0.0184,
+  "points": 6000,
+  "total": 3585246
+ },
+ "countries/GHA": {
+  "cells": 174957,
+  "max_err_pp": 0.291,
+  "mean_err_pp": 0.0436,
+  "points": 4002,
+  "total": 34784680
+ },
+ "countries/GIN": {
+  "cells": 132673,
+  "max_err_pp": 0.194,
+  "mean_err_pp": 0.0372,
+  "points": 4002,
+  "total": 14773947
+ },
+ "countries/GMB": {
+  "cells": 8005,
+  "max_err_pp": 0.288,
+  "mean_err_pp": 0.0053,
+  "points": 4001,
+  "total": 2840333
+ },
+ "countries/GNB": {
+  "cells": 14692,
+  "max_err_pp": 0.248,
+  "mean_err_pp": 0.021,
+  "points": 4001,
+  "total": 2071093
+ },
+ "countries/GNQ": {
+  "cells": 78964,
+  "max_err_pp": 0.291,
+  "mean_err_pp": 0.026,
+  "points": 6001,
+  "total": 1675261
+ },
  "countries/GRC": {
   "cells": 115044,
-  "max_err_pp": 0.137,
-  "mean_err_pp": 0.0162,
-  "points": 6001,
+  "max_err_pp": 0.184,
+  "mean_err_pp": 0.027,
+  "points": 4000,
   "total": 9573503
  },
+ "countries/GRD": {
+  "cells": 17410,
+  "max_err_pp": 0.236,
+  "mean_err_pp": 0.0212,
+  "points": 6001,
+  "total": 108909
+ },
+ "countries/GTM": {
+  "cells": 70465,
+  "max_err_pp": 0.249,
+  "mean_err_pp": 0.0475,
+  "points": 4000,
+  "total": 18578000
+ },
+ "countries/GUY": {
+  "cells": 7349,
+  "max_err_pp": 0.78,
+  "mean_err_pp": 0.008,
+  "points": 7349,
+  "total": 754756
+ },
+ "countries/HND": {
+  "cells": 71991,
+  "max_err_pp": 0.208,
+  "mean_err_pp": 0.0352,
+  "points": 4002,
+  "total": 10762146
+ },
+ "countries/HRV": {
+  "cells": 51250,
+  "max_err_pp": 0.18,
+  "mean_err_pp": 0.0339,
+  "points": 4002,
+  "total": 3566081
+ },
+ "countries/HTI": {
+  "cells": 26116,
+  "max_err_pp": 0.176,
+  "mean_err_pp": 0.0309,
+  "points": 4000,
+  "total": 11048918
+ },
+ "countries/HUN": {
+  "cells": 78389,
+  "max_err_pp": 0.197,
+  "mean_err_pp": 0.047,
+  "points": 4002,
+  "total": 9894214
+ },
  "countries/IDN": {
-  "cells": 555085,
-  "max_err_pp": 0.134,
-  "mean_err_pp": 0.0255,
-  "points": 6002,
-  "total": 269446912
+  "cells": 485940,
+  "max_err_pp": 0.238,
+  "mean_err_pp": 0.0391,
+  "points": 4000,
+  "total": 246893685
  },
  "countries/IND": {
-  "cells": 2846755,
-  "max_err_pp": 0.259,
-  "mean_err_pp": 0.0326,
-  "points": 6002,
-  "total": 1444142310
+  "cells": 2845823,
+  "max_err_pp": 0.216,
+  "mean_err_pp": 0.0404,
+  "points": 4001,
+  "total": 1443800116
+ },
+ "countries/IRL": {
+  "cells": 111869,
+  "max_err_pp": 0.163,
+  "mean_err_pp": 0.0373,
+  "points": 4002,
+  "total": 4958005
+ },
+ "countries/IRN": {
+  "cells": 270429,
+  "max_err_pp": 0.201,
+  "mean_err_pp": 0.0427,
+  "points": 4002,
+  "total": 89607262
+ },
+ "countries/IRQ": {
+  "cells": 118633,
+  "max_err_pp": 0.177,
+  "mean_err_pp": 0.0381,
+  "points": 4002,
+  "total": 47551988
+ },
+ "countries/ISL": {
+  "cells": 206497,
+  "max_err_pp": 0.171,
+  "mean_err_pp": 0.035,
+  "points": 4001,
+  "total": 338770
+ },
+ "countries/ISR": {
+  "cells": 12198,
+  "max_err_pp": 0.18,
+  "mean_err_pp": 0.0109,
+  "points": 4002,
+  "total": 8293301
  },
  "countries/ITA": {
   "cells": 333632,
-  "max_err_pp": 0.218,
-  "mean_err_pp": 0.0325,
-  "points": 6000,
+  "max_err_pp": 0.223,
+  "mean_err_pp": 0.0432,
+  "points": 4000,
   "total": 57102583
  },
+ "countries/JAM": {
+  "cells": 9800,
+  "max_err_pp": 0.206,
+  "mean_err_pp": 0.0185,
+  "points": 4000,
+  "total": 2716663
+ },
+ "countries/JOR": {
+  "cells": 14829,
+  "max_err_pp": 0.284,
+  "mean_err_pp": 0.0134,
+  "points": 4002,
+  "total": 11418728
+ },
  "countries/JPN": {
-  "cells": 318210,
-  "max_err_pp": 0.156,
-  "mean_err_pp": 0.0293,
-  "points": 6000,
-  "total": 118024932
+  "cells": 314304,
+  "max_err_pp": 0.215,
+  "mean_err_pp": 0.0416,
+  "points": 4002,
+  "total": 116518408
+ },
+ "countries/KAZ": {
+  "cells": 244995,
+  "max_err_pp": 0.155,
+  "mean_err_pp": 0.0371,
+  "points": 4001,
+  "total": 19977880
  },
  "countries/KEN": {
   "cells": 242995,
-  "max_err_pp": 0.191,
-  "mean_err_pp": 0.033,
-  "points": 6000,
+  "max_err_pp": 0.225,
+  "mean_err_pp": 0.0421,
+  "points": 4002,
   "total": 57375637
+ },
+ "countries/KGZ": {
+  "cells": 49093,
+  "max_err_pp": 0.199,
+  "mean_err_pp": 0.0292,
+  "points": 4000,
+  "total": 6856298
+ },
+ "countries/KHM": {
+  "cells": 78042,
+  "max_err_pp": 0.265,
+  "mean_err_pp": 0.0405,
+  "points": 4001,
+  "total": 17166867
+ },
+ "countries/KIR": {
+  "cells": 1528,
+  "max_err_pp": 0.606,
+  "mean_err_pp": 0.0084,
+  "points": 1528,
+  "total": 46994
+ },
+ "countries/KNA": {
+  "cells": 11042,
+  "max_err_pp": 0.096,
+  "mean_err_pp": 0.0228,
+  "points": 4000,
+  "total": 40676
  },
  "countries/KOR": {
   "cells": 115371,
-  "max_err_pp": 0.105,
-  "mean_err_pp": 0.0227,
-  "points": 6000,
+  "max_err_pp": 0.183,
+  "mean_err_pp": 0.0359,
+  "points": 4000,
   "total": 48451649
  },
- "countries/MEX": {
-  "cells": 703791,
-  "max_err_pp": 0.159,
+ "countries/KWT": {
+  "cells": 6786,
+  "max_err_pp": 0.277,
+  "mean_err_pp": 0.0024,
+  "points": 4000,
+  "total": 4337719
+ },
+ "countries/LAO": {
+  "cells": 83736,
+  "max_err_pp": 0.213,
+  "mean_err_pp": 0.042,
+  "points": 4000,
+  "total": 7782097
+ },
+ "countries/LBN": {
+  "cells": 538430,
+  "max_err_pp": 0.224,
+  "mean_err_pp": 0.0386,
+  "points": 4000,
+  "total": 5038787
+ },
+ "countries/LBR": {
+  "cells": 32716,
+  "max_err_pp": 0.11,
+  "mean_err_pp": 0.0241,
+  "points": 4002,
+  "total": 5242777
+ },
+ "countries/LBY": {
+  "cells": 66459,
+  "max_err_pp": 0.15,
+  "mean_err_pp": 0.0274,
+  "points": 4001,
+  "total": 6934163
+ },
+ "countries/LCA": {
+  "cells": 24128,
+  "max_err_pp": 0.15,
+  "mean_err_pp": 0.0359,
+  "points": 4001,
+  "total": 178414
+ },
+ "countries/LIE": {
+  "cells": 9310,
+  "max_err_pp": 0.136,
+  "mean_err_pp": 0.0221,
+  "points": 4002,
+  "total": 42216
+ },
+ "countries/LKA": {
+  "cells": 52086,
+  "max_err_pp": 0.243,
+  "mean_err_pp": 0.0459,
+  "points": 4000,
+  "total": 20894414
+ },
+ "countries/LSO": {
+  "cells": 27446,
+  "max_err_pp": 0.188,
+  "mean_err_pp": 0.0388,
+  "points": 4002,
+  "total": 2380891
+ },
+ "countries/LTU": {
+  "cells": 82168,
+  "max_err_pp": 0.195,
   "mean_err_pp": 0.0333,
-  "points": 6002,
-  "total": 129487899
+  "points": 4002,
+  "total": 2656790
+ },
+ "countries/LUX": {
+  "cells": 127649,
+  "max_err_pp": 0.2,
+  "mean_err_pp": 0.0431,
+  "points": 4001,
+  "total": 668108
+ },
+ "countries/LVA": {
+  "cells": 74707,
+  "max_err_pp": 0.232,
+  "mean_err_pp": 0.0316,
+  "points": 4000,
+  "total": 1747277
+ },
+ "countries/MAR": {
+  "cells": 98369,
+  "max_err_pp": 0.275,
+  "mean_err_pp": 0.0396,
+  "points": 4002,
+  "total": 38849217
+ },
+ "countries/MCO": {
+  "cells": 2478,
+  "max_err_pp": 0.02,
+  "mean_err_pp": 0.0001,
+  "points": 2478,
+  "total": 47945
+ },
+ "countries/MDA": {
+  "cells": 27200,
+  "max_err_pp": 0.242,
+  "mean_err_pp": 0.0349,
+  "points": 4002,
+  "total": 3224024
+ },
+ "countries/MDG": {
+  "cells": 338442,
+  "max_err_pp": 0.242,
+  "mean_err_pp": 0.0401,
+  "points": 4000,
+  "total": 31304167
+ },
+ "countries/MDV": {
+  "cells": 961,
+  "max_err_pp": 1.155,
+  "mean_err_pp": 0.0141,
+  "points": 961,
+  "total": 238024
+ },
+ "countries/MEX": {
+  "cells": 703511,
+  "max_err_pp": 0.244,
+  "mean_err_pp": 0.0434,
+  "points": 4002,
+  "total": 129336083
+ },
+ "countries/MHL": {
+  "cells": 619,
+  "max_err_pp": 0.75,
+  "mean_err_pp": 0.0091,
+  "points": 619,
+  "total": 4375
+ },
+ "countries/MKD": {
+  "cells": 15008,
+  "max_err_pp": 0.07,
+  "mean_err_pp": 0.0143,
+  "points": 4001,
+  "total": 2085352
+ },
+ "countries/MLI": {
+  "cells": 223747,
+  "max_err_pp": 0.232,
+  "mean_err_pp": 0.0438,
+  "points": 4000,
+  "total": 24885667
+ },
+ "countries/MLT": {
+  "cells": 38375,
+  "max_err_pp": 0.256,
+  "mean_err_pp": 0.0457,
+  "points": 4000,
+  "total": 521955
+ },
+ "countries/MMR": {
+  "cells": 153633,
+  "max_err_pp": 0.243,
+  "mean_err_pp": 0.0465,
+  "points": 4002,
+  "total": 53118852
+ },
+ "countries/MNE": {
+  "cells": 104299,
+  "max_err_pp": 0.162,
+  "mean_err_pp": 0.0327,
+  "points": 4002,
+  "total": 606461
+ },
+ "countries/MNG": {
+  "cells": 46597,
+  "max_err_pp": 0.238,
+  "mean_err_pp": 0.0201,
+  "points": 4000,
+  "total": 3541862
+ },
+ "countries/MOZ": {
+  "cells": 401532,
+  "max_err_pp": 0.164,
+  "mean_err_pp": 0.0413,
+  "points": 4001,
+  "total": 34946205
+ },
+ "countries/MRT": {
+  "cells": 69542,
+  "max_err_pp": 0.238,
+  "mean_err_pp": 0.0215,
+  "points": 4000,
+  "total": 5167453
+ },
+ "countries/MUS": {
+  "cells": 82716,
+  "max_err_pp": 0.27,
+  "mean_err_pp": 0.0412,
+  "points": 4001,
+  "total": 1276851
+ },
+ "countries/MWI": {
+  "cells": 89700,
+  "max_err_pp": 0.256,
+  "mean_err_pp": 0.0428,
+  "points": 4000,
+  "total": 22184200
+ },
+ "countries/MYS": {
+  "cells": 104130,
+  "max_err_pp": 0.139,
+  "mean_err_pp": 0.0263,
+  "points": 6000,
+  "total": 32323668
+ },
+ "countries/NAM": {
+  "cells": 119273,
+  "max_err_pp": 0.207,
+  "mean_err_pp": 0.0327,
+  "points": 4001,
+  "total": 2711489
+ },
+ "countries/NER": {
+  "cells": 205872,
+  "max_err_pp": 0.166,
+  "mean_err_pp": 0.0313,
+  "points": 6001,
+  "total": 29383327
  },
  "countries/NGA": {
   "cells": 727628,
-  "max_err_pp": 0.155,
-  "mean_err_pp": 0.0339,
-  "points": 6001,
+  "max_err_pp": 0.228,
+  "mean_err_pp": 0.0493,
+  "points": 4002,
   "total": 232678210
+ },
+ "countries/NIC": {
+  "cells": 76568,
+  "max_err_pp": 0.192,
+  "mean_err_pp": 0.0325,
+  "points": 4002,
+  "total": 7127916
+ },
+ "countries/NLD": {
+  "cells": 61204,
+  "max_err_pp": 0.237,
+  "mean_err_pp": 0.0466,
+  "points": 4000,
+  "total": 17484959
  },
  "countries/NOR": {
   "cells": 90300,
-  "max_err_pp": 0.113,
-  "mean_err_pp": 0.0254,
-  "points": 6000,
+  "max_err_pp": 0.148,
+  "mean_err_pp": 0.035,
+  "points": 4000,
   "total": 4845596
+ },
+ "countries/NPL": {
+  "cells": 107273,
+  "max_err_pp": 0.214,
+  "mean_err_pp": 0.025,
+  "points": 6001,
+  "total": 32679196
+ },
+ "countries/NRU": {
+  "cells": 1011,
+  "max_err_pp": 0.32,
+  "mean_err_pp": 0.0011,
+  "points": 1011,
+  "total": 10593
  },
  "countries/NZL": {
   "cells": 110781,
-  "max_err_pp": 0.078,
-  "mean_err_pp": 0.0137,
-  "points": 6001,
+  "max_err_pp": 0.152,
+  "mean_err_pp": 0.0271,
+  "points": 4000,
   "total": 4877874
+ },
+ "countries/OMN": {
+  "cells": 38032,
+  "max_err_pp": 0.216,
+  "mean_err_pp": 0.023,
+  "points": 4000,
+  "total": 4799576
+ },
+ "countries/PAK": {
+  "cells": 462740,
+  "max_err_pp": 0.298,
+  "mean_err_pp": 0.0476,
+  "points": 4002,
+  "total": 249095410
+ },
+ "countries/PAN": {
+  "cells": 30189,
+  "max_err_pp": 0.108,
+  "mean_err_pp": 0.0175,
+  "points": 4002,
+  "total": 4508436
  },
  "countries/PER": {
   "cells": 246599,
-  "max_err_pp": 0.133,
-  "mean_err_pp": 0.0217,
-  "points": 6002,
+  "max_err_pp": 0.149,
+  "mean_err_pp": 0.0324,
+  "points": 4000,
   "total": 34283532
  },
  "countries/PHL": {
-  "cells": 199043,
-  "max_err_pp": 0.109,
-  "mean_err_pp": 0.0236,
-  "points": 6001,
-  "total": 109254197
+  "cells": 196696,
+  "max_err_pp": 0.23,
+  "mean_err_pp": 0.0395,
+  "points": 4002,
+  "total": 108859691
+ },
+ "countries/PLW": {
+  "cells": 2825,
+  "max_err_pp": 0.245,
+  "mean_err_pp": 0.0094,
+  "points": 2825,
+  "total": 8818
+ },
+ "countries/PNG": {
+  "cells": 56820,
+  "max_err_pp": 0.194,
+  "mean_err_pp": 0.0403,
+  "points": 4000,
+  "total": 9548806
+ },
+ "countries/POL": {
+  "cells": 401449,
+  "max_err_pp": 0.259,
+  "mean_err_pp": 0.0515,
+  "points": 4002,
+  "total": 39685038
+ },
+ "countries/PRT": {
+  "cells": 81964,
+  "max_err_pp": 0.181,
+  "mean_err_pp": 0.0374,
+  "points": 4001,
+  "total": 8902771
+ },
+ "countries/PRY": {
+  "cells": 108673,
+  "max_err_pp": 0.226,
+  "mean_err_pp": 0.0401,
+  "points": 4000,
+  "total": 6860957
+ },
+ "countries/QAT": {
+  "cells": 221216,
+  "max_err_pp": 0.197,
+  "mean_err_pp": 0.036,
+  "points": 6000,
+  "total": 2706995
+ },
+ "countries/ROU": {
+  "cells": 174524,
+  "max_err_pp": 0.16,
+  "mean_err_pp": 0.044,
+  "points": 4002,
+  "total": 19265616
  },
  "countries/RUS": {
-  "cells": 1319793,
-  "max_err_pp": 0.163,
-  "mean_err_pp": 0.0295,
-  "points": 6000,
-  "total": 144931425
+  "cells": 1291740,
+  "max_err_pp": 0.23,
+  "mean_err_pp": 0.0426,
+  "points": 4000,
+  "total": 141642327
+ },
+ "countries/RWA": {
+  "cells": 24443,
+  "max_err_pp": 0.218,
+  "mean_err_pp": 0.0399,
+  "points": 4001,
+  "total": 14659876
  },
  "countries/SAU": {
   "cells": 253675,
-  "max_err_pp": 0.089,
-  "mean_err_pp": 0.0224,
-  "points": 6002,
+  "max_err_pp": 0.198,
+  "mean_err_pp": 0.0329,
+  "points": 4002,
   "total": 37209110
+ },
+ "countries/SDN": {
+  "cells": 355710,
+  "max_err_pp": 0.26,
+  "mean_err_pp": 0.0278,
+  "points": 6001,
+  "total": 50710114
+ },
+ "countries/SDS": {
+  "cells": 77498,
+  "max_err_pp": 0.573,
+  "mean_err_pp": 0.0118,
+  "points": 8002,
+  "total": 11470831
+ },
+ "countries/SEN": {
+  "cells": 103412,
+  "max_err_pp": 0.14,
+  "mean_err_pp": 0.0306,
+  "points": 4001,
+  "total": 18367220
+ },
+ "countries/SGP": {
+  "cells": 36852,
+  "max_err_pp": 0.156,
+  "mean_err_pp": 0.0302,
+  "points": 6000,
+  "total": 5687348
+ },
+ "countries/SLB": {
+  "cells": 5075,
+  "max_err_pp": 0.157,
+  "mean_err_pp": 0.0039,
+  "points": 4000,
+  "total": 495196
+ },
+ "countries/SLE": {
+  "cells": 531735,
+  "max_err_pp": 0.296,
+  "mean_err_pp": 0.0368,
+  "points": 6001,
+  "total": 8451514
+ },
+ "countries/SLV": {
+  "cells": 19745,
+  "max_err_pp": 0.265,
+  "mean_err_pp": 0.0257,
+  "points": 4000,
+  "total": 6366049
+ },
+ "countries/SMR": {
+  "cells": 6292,
+  "max_err_pp": 0.041,
+  "mean_err_pp": 0.0083,
+  "points": 4001,
+  "total": 26271
+ },
+ "countries/SOM": {
+  "cells": 88709,
+  "max_err_pp": 0.401,
+  "mean_err_pp": 0.0119,
+  "points": 8002,
+  "total": 14087462
+ },
+ "countries/SRB": {
+  "cells": 71822,
+  "max_err_pp": 0.265,
+  "mean_err_pp": 0.0373,
+  "points": 4002,
+  "total": 7166162
+ },
+ "countries/STP": {
+  "cells": 12507,
+  "max_err_pp": 0.104,
+  "mean_err_pp": 0.0181,
+  "points": 4001,
+  "total": 227924
+ },
+ "countries/SUR": {
+  "cells": 115804,
+  "max_err_pp": 0.25,
+  "mean_err_pp": 0.0268,
+  "points": 8002,
+  "total": 626740
+ },
+ "countries/SVK": {
+  "cells": 41415,
+  "max_err_pp": 0.176,
+  "mean_err_pp": 0.0374,
+  "points": 4000,
+  "total": 5605232
+ },
+ "countries/SVN": {
+  "cells": 24957,
+  "max_err_pp": 0.149,
+  "mean_err_pp": 0.0337,
+  "points": 4000,
+  "total": 2129293
  },
  "countries/SWE": {
   "cells": 211924,
-  "max_err_pp": 0.155,
-  "mean_err_pp": 0.0291,
+  "max_err_pp": 0.175,
+  "mean_err_pp": 0.0289,
   "points": 6000,
   "total": 9826643
+ },
+ "countries/SWZ": {
+  "cells": 16127,
+  "max_err_pp": 0.199,
+  "mean_err_pp": 0.04,
+  "points": 4000,
+  "total": 1229877
+ },
+ "countries/SYC": {
+  "cells": 11415,
+  "max_err_pp": 0.211,
+  "mean_err_pp": 0.0184,
+  "points": 4001,
+  "total": 102737
+ },
+ "countries/SYR": {
+  "cells": 73324,
+  "max_err_pp": 0.211,
+  "mean_err_pp": 0.0336,
+  "points": 4000,
+  "total": 24948082
+ },
+ "countries/TCD": {
+  "cells": 152638,
+  "max_err_pp": 0.181,
+  "mean_err_pp": 0.0385,
+  "points": 4000,
+  "total": 19528590
+ },
+ "countries/TGO": {
+  "cells": 54075,
+  "max_err_pp": 0.159,
+  "mean_err_pp": 0.0265,
+  "points": 4001,
+  "total": 9454730
  },
  "countries/THA": {
   "cells": 404469,
   "max_err_pp": 0.227,
-  "mean_err_pp": 0.034,
+  "mean_err_pp": 0.0337,
   "points": 6002,
   "total": 71257522
  },
+ "countries/TJK": {
+  "cells": 38645,
+  "max_err_pp": 0.177,
+  "mean_err_pp": 0.0362,
+  "points": 4001,
+  "total": 10621929
+ },
+ "countries/TKM": {
+  "cells": 49835,
+  "max_err_pp": 0.231,
+  "mean_err_pp": 0.0256,
+  "points": 4000,
+  "total": 6865731
+ },
+ "countries/TLS": {
+  "cells": 8274,
+  "max_err_pp": 0.071,
+  "mean_err_pp": 0.017,
+  "points": 4000,
+  "total": 1351647
+ },
+ "countries/TON": {
+  "cells": 8619,
+  "max_err_pp": 0.102,
+  "mean_err_pp": 0.0166,
+  "points": 4001,
+  "total": 45543
+ },
+ "countries/TTO": {
+  "cells": 3650,
+  "max_err_pp": 0.088,
+  "mean_err_pp": 0.0004,
+  "points": 3650,
+  "total": 1489034
+ },
+ "countries/TUN": {
+  "cells": 103672,
+  "max_err_pp": 0.17,
+  "mean_err_pp": 0.0388,
+  "points": 4002,
+  "total": 11619781
+ },
  "countries/TUR": {
   "cells": 321506,
-  "max_err_pp": 0.166,
-  "mean_err_pp": 0.0278,
-  "points": 6002,
+  "max_err_pp": 0.25,
+  "mean_err_pp": 0.0431,
+  "points": 4001,
   "total": 83357255
+ },
+ "countries/TUV": {
+  "cells": 157,
+  "max_err_pp": 1.32,
+  "mean_err_pp": 0.0178,
+  "points": 157,
+  "total": 340
+ },
+ "countries/TZA": {
+  "cells": 531676,
+  "max_err_pp": 0.209,
+  "mean_err_pp": 0.0425,
+  "points": 4002,
+  "total": 71002628
+ },
+ "countries/UGA": {
+  "cells": 182966,
+  "max_err_pp": 0.226,
+  "mean_err_pp": 0.042,
+  "points": 4001,
+  "total": 51400026
+ },
+ "countries/UKR": {
+  "cells": 327725,
+  "max_err_pp": 0.176,
+  "mean_err_pp": 0.0422,
+  "points": 4001,
+  "total": 36492540
+ },
+ "countries/URY": {
+  "cells": 65347,
+  "max_err_pp": 0.187,
+  "mean_err_pp": 0.0118,
+  "points": 4000,
+  "total": 3314623
  },
  "countries/USA": {
   "cells": 5016054,
-  "max_err_pp": 0.136,
-  "mean_err_pp": 0.0324,
-  "points": 6001,
+  "max_err_pp": 0.222,
+  "mean_err_pp": 0.0432,
+  "points": 4002,
   "total": 336300925
+ },
+ "countries/UZB": {
+  "cells": 139327,
+  "max_err_pp": 0.15,
+  "mean_err_pp": 0.0345,
+  "points": 4001,
+  "total": 36263650
+ },
+ "countries/VCT": {
+  "cells": 10894,
+  "max_err_pp": 0.16,
+  "mean_err_pp": 0.0228,
+  "points": 4001,
+  "total": 76917
+ },
+ "countries/VEN": {
+  "cells": 135119,
+  "max_err_pp": 0.259,
+  "mean_err_pp": 0.0396,
+  "points": 4002,
+  "total": 28672772
  },
  "countries/VNM": {
   "cells": 219576,
   "max_err_pp": 0.243,
-  "mean_err_pp": 0.031,
+  "mean_err_pp": 0.0307,
   "points": 6000,
   "total": 97417594
  },
+ "countries/VUT": {
+  "cells": 3123,
+  "max_err_pp": 0.122,
+  "mean_err_pp": 0.0012,
+  "points": 3123,
+  "total": 265223
+ },
+ "countries/WSM": {
+  "cells": 36193,
+  "max_err_pp": 0.268,
+  "mean_err_pp": 0.0377,
+  "points": 4002,
+  "total": 184812
+ },
+ "countries/YEM": {
+  "cells": 45027,
+  "max_err_pp": 0.206,
+  "mean_err_pp": 0.0372,
+  "points": 4000,
+  "total": 35307846
+ },
  "countries/ZAF": {
   "cells": 535804,
-  "max_err_pp": 0.107,
-  "mean_err_pp": 0.0293,
-  "points": 6000,
+  "max_err_pp": 0.22,
+  "mean_err_pp": 0.0444,
+  "points": 4002,
   "total": 61272224
  },
- "economy/ARG": {
-  "cells": 572900,
-  "max_err_pp": 0.088,
-  "mean_err_pp": 0.0229,
+ "countries/ZMB": {
+  "cells": 325551,
+  "max_err_pp": 0.235,
+  "mean_err_pp": 0.0403,
+  "points": 4002,
+  "total": 21813404
+ },
+ "countries/ZWE": {
+  "cells": 287892,
+  "max_err_pp": 0.164,
+  "mean_err_pp": 0.0348,
   "points": 6000,
-  "total": 1433415382774
+  "total": 17332485
+ },
+ "economy/ARG": {
+  "cells": 572058,
+  "max_err_pp": 0.197,
+  "mean_err_pp": 0.0317,
+  "points": 5000,
+  "total": 1423057237899
  },
  "economy/AUS": {
   "cells": 643259,
-  "max_err_pp": 0.093,
-  "mean_err_pp": 0.0226,
-  "points": 6000,
+  "max_err_pp": 0.138,
+  "mean_err_pp": 0.0278,
+  "points": 5002,
   "total": 1876695980985
  },
  "economy/BRA": {
-  "cells": 2895601,
-  "max_err_pp": 0.134,
-  "mean_err_pp": 0.0301,
-  "points": 6002,
-  "total": 4758452781337
+  "cells": 2888835,
+  "max_err_pp": 0.158,
+  "mean_err_pp": 0.034,
+  "points": 5000,
+  "total": 4741532708086
  },
  "economy/CAN": {
-  "cells": 1037235,
-  "max_err_pp": 0.137,
-  "mean_err_pp": 0.0243,
-  "points": 6000,
-  "total": 2452345618741
+  "cells": 710970,
+  "max_err_pp": 0.152,
+  "mean_err_pp": 0.0284,
+  "points": 5000,
+  "total": 2016711486685
  },
  "economy/CHL": {
   "cells": 146483,
-  "max_err_pp": 0.096,
-  "mean_err_pp": 0.0138,
-  "points": 6001,
+  "max_err_pp": 0.104,
+  "mean_err_pp": 0.0176,
+  "points": 5001,
   "total": 663914373072
  },
  "economy/CHN": {
-  "cells": 3907876,
-  "max_err_pp": 0.177,
-  "mean_err_pp": 0.0365,
-  "points": 6000,
-  "total": 38058977008376
+  "cells": 3877898,
+  "max_err_pp": 0.274,
+  "mean_err_pp": 0.0395,
+  "points": 5002,
+  "total": 37694739882195
  },
  "economy/DEU": {
   "cells": 493120,
-  "max_err_pp": 0.211,
-  "mean_err_pp": 0.0346,
-  "points": 6002,
+  "max_err_pp": 0.219,
+  "mean_err_pp": 0.0393,
+  "points": 5001,
   "total": 5980280361517
  },
  "economy/EGY": {
   "cells": 133770,
-  "max_err_pp": 0.115,
-  "mean_err_pp": 0.0251,
-  "points": 6001,
+  "max_err_pp": 0.192,
+  "mean_err_pp": 0.0305,
+  "points": 5000,
   "total": 2162527536409
  },
  "economy/ESP": {
   "cells": 415220,
-  "max_err_pp": 0.133,
-  "mean_err_pp": 0.026,
-  "points": 6000,
+  "max_err_pp": 0.112,
+  "mean_err_pp": 0.0315,
+  "points": 5000,
   "total": 2494485430057
  },
  "economy/FRA": {
   "cells": 729346,
-  "max_err_pp": 0.182,
-  "mean_err_pp": 0.0316,
-  "points": 6001,
+  "max_err_pp": 0.17,
+  "mean_err_pp": 0.0353,
+  "points": 5000,
   "total": 3950329630544
  },
  "economy/GBR": {
   "cells": 343427,
-  "max_err_pp": 0.231,
-  "mean_err_pp": 0.0336,
-  "points": 6002,
+  "max_err_pp": 0.286,
+  "mean_err_pp": 0.0383,
+  "points": 5001,
   "total": 3788930048604
  },
  "economy/IDN": {
-  "cells": 554839,
-  "max_err_pp": 0.126,
-  "mean_err_pp": 0.0267,
-  "points": 6000,
-  "total": 4468511494069
+  "cells": 485766,
+  "max_err_pp": 0.17,
+  "mean_err_pp": 0.0303,
+  "points": 5000,
+  "total": 4211709533765
  },
  "economy/IND": {
-  "cells": 2846696,
-  "max_err_pp": 0.176,
-  "mean_err_pp": 0.0307,
-  "points": 6001,
-  "total": 16199022240127
+  "cells": 2845776,
+  "max_err_pp": 0.249,
+  "mean_err_pp": 0.0357,
+  "points": 5001,
+  "total": 16192677089177
  },
  "economy/ITA": {
   "cells": 333418,
-  "max_err_pp": 0.118,
-  "mean_err_pp": 0.0296,
-  "points": 6002,
+  "max_err_pp": 0.142,
+  "mean_err_pp": 0.0356,
+  "points": 5000,
   "total": 3420693136502
  },
  "economy/JPN": {
-  "cells": 318007,
-  "max_err_pp": 0.117,
-  "mean_err_pp": 0.0297,
-  "points": 6001,
-  "total": 5947991435902
+  "cells": 314114,
+  "max_err_pp": 0.185,
+  "mean_err_pp": 0.0374,
+  "points": 5001,
+  "total": 5899443858030
  },
  "economy/KOR": {
   "cells": 115348,
-  "max_err_pp": 0.12,
-  "mean_err_pp": 0.0222,
-  "points": 6002,
+  "max_err_pp": 0.162,
+  "mean_err_pp": 0.0271,
+  "points": 5000,
   "total": 2630726601114
  },
  "economy/MEX": {
-  "cells": 703627,
-  "max_err_pp": 0.117,
-  "mean_err_pp": 0.0274,
-  "points": 6001,
-  "total": 3229597588219
+  "cells": 703357,
+  "max_err_pp": 0.264,
+  "mean_err_pp": 0.0366,
+  "points": 5001,
+  "total": 3224108984740
  },
  "economy/NGA": {
   "cells": 727625,
-  "max_err_pp": 0.148,
-  "mean_err_pp": 0.0357,
-  "points": 6001,
+  "max_err_pp": 0.255,
+  "mean_err_pp": 0.0395,
+  "points": 5002,
   "total": 1486611556955
  },
  "economy/RUS": {
-  "cells": 1319619,
-  "max_err_pp": 0.204,
-  "mean_err_pp": 0.0294,
-  "points": 6001,
-  "total": 6698253693735
+  "cells": 1291604,
+  "max_err_pp": 0.227,
+  "mean_err_pp": 0.0352,
+  "points": 5001,
+  "total": 6574396825981
  },
  "economy/SAU": {
   "cells": 252724,
-  "max_err_pp": 0.106,
-  "mean_err_pp": 0.0154,
-  "points": 6001,
+  "max_err_pp": 0.11,
+  "mean_err_pp": 0.0213,
+  "points": 5001,
   "total": 2531792727738
  },
  "economy/TUR": {
   "cells": 321444,
-  "max_err_pp": 0.146,
-  "mean_err_pp": 0.0261,
-  "points": 6000,
+  "max_err_pp": 0.123,
+  "mean_err_pp": 0.0318,
+  "points": 5002,
   "total": 3671663173539
  },
  "economy/USA": {
   "cells": 5015623,
-  "max_err_pp": 0.135,
-  "mean_err_pp": 0.0307,
-  "points": 6001,
+  "max_err_pp": 0.201,
+  "mean_err_pp": 0.0342,
+  "points": 5000,
   "total": 28767154808950
  },
  "economy/ZAF": {
   "cells": 535625,
-  "max_err_pp": 0.179,
-  "mean_err_pp": 0.0296,
-  "points": 6002,
+  "max_err_pp": 0.181,
+  "mean_err_pp": 0.0345,
+  "points": 5002,
   "total": 953245109532
  },
  "islands/BHR": {
   "cells": 50504,
   "max_err_pp": 0.205,
-  "mean_err_pp": 0.0319,
+  "mean_err_pp": 0.0323,
   "points": 5001,
   "total": 1314053
  },
  "islands/BHS": {
   "cells": 69676,
-  "max_err_pp": 0.215,
-  "mean_err_pp": 0.0245,
+  "max_err_pp": 0.23,
+  "mean_err_pp": 0.024,
   "points": 5000,
   "total": 330730
  },
  "islands/BRB": {
   "cells": 32636,
   "max_err_pp": 0.274,
-  "mean_err_pp": 0.0392,
+  "mean_err_pp": 0.0394,
   "points": 5001,
   "total": 256894
  },
  "islands/CPV": {
   "cells": 75386,
-  "max_err_pp": 0.096,
-  "mean_err_pp": 0.0213,
+  "max_err_pp": 0.112,
+  "mean_err_pp": 0.0214,
   "points": 5002,
   "total": 557522
  },
  "islands/CUB": {
   "cells": 638453,
   "max_err_pp": 0.152,
-  "mean_err_pp": 0.0274,
+  "mean_err_pp": 0.0272,
   "points": 5002,
   "total": 11025567
  },
  "islands/FJI": {
   "cells": 184604,
-  "max_err_pp": 0.185,
-  "mean_err_pp": 0.031,
+  "max_err_pp": 0.228,
+  "mean_err_pp": 0.0302,
   "points": 5001,
   "total": 859786
  },
  "islands/ISL": {
   "cells": 212670,
-  "max_err_pp": 0.167,
+  "max_err_pp": 0.179,
   "mean_err_pp": 0.0343,
   "points": 5002,
   "total": 344713
@@ -457,14 +1563,14 @@
  "islands/JAM": {
   "cells": 420822,
   "max_err_pp": 0.228,
-  "mean_err_pp": 0.0378,
+  "mean_err_pp": 0.0374,
   "points": 5000,
   "total": 2736461
  },
  "islands/LKA": {
   "cells": 2758380,
   "max_err_pp": 0.134,
-  "mean_err_pp": 0.034,
+  "mean_err_pp": 0.0338,
   "points": 5002,
   "total": 21740489
  },
@@ -478,42 +1584,42 @@
  "islands/MUS": {
   "cells": 76376,
   "max_err_pp": 0.172,
-  "mean_err_pp": 0.0367,
+  "mean_err_pp": 0.0372,
   "points": 5002,
   "total": 1241606
  },
  "islands/PRI": {
   "cells": 538396,
-  "max_err_pp": 0.25,
-  "mean_err_pp": 0.0368,
+  "max_err_pp": 0.271,
+  "mean_err_pp": 0.0373,
   "points": 5000,
   "total": 3257611
  },
  "islands/SGP": {
   "cells": 36852,
   "max_err_pp": 0.197,
-  "mean_err_pp": 0.035,
+  "mean_err_pp": 0.0347,
   "points": 5002,
   "total": 5687348
  },
  "islands/TTO": {
   "cells": 159358,
   "max_err_pp": 0.285,
-  "mean_err_pp": 0.0315,
+  "mean_err_pp": 0.0317,
   "points": 5001,
   "total": 1502699
  },
  "islands/WSM": {
   "cells": 36193,
   "max_err_pp": 0.265,
-  "mean_err_pp": 0.0321,
+  "mean_err_pp": 0.0322,
   "points": 5000,
   "total": 184812
  },
  "world/WLD": {
   "cells": 843032,
-  "max_err_pp": 0.129,
-  "mean_err_pp": 0.0209,
+  "max_err_pp": 0.123,
+  "mean_err_pp": 0.0214,
   "points": 10000,
   "total": 8191987081
  }

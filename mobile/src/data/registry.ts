@@ -3,7 +3,12 @@ import type { CountryPack } from "@/game/types";
 
 export type PackId = "countries" | "islands" | "world" | "economy" | "billionaires";
 export type Metric = "population" | "gdp" | "billionaires";
-export type PackEntry = { iso: string; iso2: string; name: string; pack: PackId; note: string | null; metric: Metric; total: number };
+export type PackEntry = {
+  iso: string; iso2: string; name: string; pack: PackId; note: string | null; metric: Metric; total: number;
+  continent: string | null;
+  /** Error (pp) of a naive cut through the middle of the land; higher = harder. */
+  difficulty: number;
+};
 
 export const PACK_INDEX: PackEntry[] = [
   {
@@ -13,7 +18,64 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "world",
     "note": "Every country except Antarctica",
     "metric": "population",
-    "total": 8191987081
+    "total": 8191987081,
+    "continent": null,
+    "difficulty": 21.13
+  },
+  {
+    "iso": "AFG",
+    "iso2": "AF",
+    "name": "Afghanistan",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 44182389,
+    "continent": "Asia",
+    "difficulty": 19.41
+  },
+  {
+    "iso": "AGO",
+    "iso2": "AO",
+    "name": "Angola",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 36744555,
+    "continent": "Africa",
+    "difficulty": 26.84
+  },
+  {
+    "iso": "ALB",
+    "iso2": "AL",
+    "name": "Albania",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 2758124,
+    "continent": "Europe",
+    "difficulty": 20.87
+  },
+  {
+    "iso": "AND",
+    "iso2": "AD",
+    "name": "Andorra",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 79191,
+    "continent": "Europe",
+    "difficulty": 19.09
+  },
+  {
+    "iso": "ARE",
+    "iso2": "AE",
+    "name": "United Arab Emirates",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 8693464,
+    "continent": "Asia",
+    "difficulty": 41.6
   },
   {
     "iso": "ARG",
@@ -22,7 +84,31 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 45995116
+    "total": 45851246,
+    "continent": "South America",
+    "difficulty": 22.35
+  },
+  {
+    "iso": "ARM",
+    "iso2": "AM",
+    "name": "Armenia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 2762530,
+    "continent": "Asia",
+    "difficulty": 27.6
+  },
+  {
+    "iso": "ATG",
+    "iso2": "AG",
+    "name": "Antigua and Barbuda",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 85222,
+    "continent": "North America",
+    "difficulty": 44.19
   },
   {
     "iso": "AUS",
@@ -31,7 +117,163 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 26233178
+    "total": 26233178,
+    "continent": "Oceania",
+    "difficulty": 34.17
+  },
+  {
+    "iso": "AUT",
+    "iso2": "AT",
+    "name": "Austria",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 9081811,
+    "continent": "Europe",
+    "difficulty": 15.97
+  },
+  {
+    "iso": "AZE",
+    "iso2": "AZ",
+    "name": "Azerbaijan",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 10339031,
+    "continent": "Asia",
+    "difficulty": 12.18
+  },
+  {
+    "iso": "BDI",
+    "iso2": "BI",
+    "name": "Burundi",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 13920113,
+    "continent": "Africa",
+    "difficulty": 7.66
+  },
+  {
+    "iso": "BEL",
+    "iso2": "BE",
+    "name": "Belgium",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 11813741,
+    "continent": "Europe",
+    "difficulty": 18.46
+  },
+  {
+    "iso": "BEN",
+    "iso2": "BJ",
+    "name": "Benin",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 14594672,
+    "continent": "Africa",
+    "difficulty": 24.12
+  },
+  {
+    "iso": "BFA",
+    "iso2": "BF",
+    "name": "Burkina Faso",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 24447291,
+    "continent": "Africa",
+    "difficulty": 4.57
+  },
+  {
+    "iso": "BGD",
+    "iso2": "BD",
+    "name": "Bangladesh",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 172483551,
+    "continent": "Asia",
+    "difficulty": 3.94
+  },
+  {
+    "iso": "BGR",
+    "iso2": "BG",
+    "name": "Bulgaria",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 6552789,
+    "continent": "Europe",
+    "difficulty": 7.36
+  },
+  {
+    "iso": "BHR",
+    "iso2": "BH",
+    "name": "Bahrain",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 1314053,
+    "continent": "Asia",
+    "difficulty": 43.72
+  },
+  {
+    "iso": "BHS",
+    "iso2": "BS",
+    "name": "The Bahamas",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 330730,
+    "continent": "North America",
+    "difficulty": 44.53
+  },
+  {
+    "iso": "BIH",
+    "iso2": "BA",
+    "name": "Bosnia and Herzegovina",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 3198515,
+    "continent": "Europe",
+    "difficulty": 12.32
+  },
+  {
+    "iso": "BLR",
+    "iso2": "BY",
+    "name": "Belarus",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 9420940,
+    "continent": "Europe",
+    "difficulty": 10.18
+  },
+  {
+    "iso": "BLZ",
+    "iso2": "BZ",
+    "name": "Belize",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 362264,
+    "continent": "North America",
+    "difficulty": 11.19
+  },
+  {
+    "iso": "BOL",
+    "iso2": "BO",
+    "name": "Bolivia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 12640183,
+    "continent": "South America",
+    "difficulty": 17.57
   },
   {
     "iso": "BRA",
@@ -40,7 +282,64 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 212076732
+    "total": 211368657,
+    "continent": "South America",
+    "difficulty": 28.02
+  },
+  {
+    "iso": "BRB",
+    "iso2": "BB",
+    "name": "Barbados",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 256894,
+    "continent": "North America",
+    "difficulty": 21.71
+  },
+  {
+    "iso": "BRN",
+    "iso2": "BN",
+    "name": "Brunei",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 440828,
+    "continent": "Asia",
+    "difficulty": 39.14
+  },
+  {
+    "iso": "BTN",
+    "iso2": "BT",
+    "name": "Bhutan",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 985814,
+    "continent": "Asia",
+    "difficulty": 19.71
+  },
+  {
+    "iso": "BWA",
+    "iso2": "BW",
+    "name": "Botswana",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 2721528,
+    "continent": "Africa",
+    "difficulty": 25.78
+  },
+  {
+    "iso": "CAF",
+    "iso2": "CF",
+    "name": "Central African Republic",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 6083689,
+    "continent": "Africa",
+    "difficulty": 27.72
   },
   {
     "iso": "CAN",
@@ -49,7 +348,20 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 37274702
+    "total": 29628892,
+    "continent": "North America",
+    "difficulty": 27.56
+  },
+  {
+    "iso": "CHE",
+    "iso2": "CH",
+    "name": "Switzerland",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 8911427,
+    "continent": "Europe",
+    "difficulty": 16.67
   },
   {
     "iso": "CHL",
@@ -58,7 +370,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 19344850
+    "total": 19344850,
+    "continent": "South America",
+    "difficulty": 25.9
   },
   {
     "iso": "CHN",
@@ -67,7 +381,53 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 1404649300
+    "total": 1392004379,
+    "continent": "Asia",
+    "difficulty": 31.95
+  },
+  {
+    "iso": "CIV",
+    "iso2": "CI",
+    "name": "C\u00f4te d'Ivoire",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 29654949,
+    "continent": "Africa",
+    "difficulty": 16.27
+  },
+  {
+    "iso": "CMR",
+    "iso2": "CM",
+    "name": "Cameroon",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 29700930,
+    "continent": "Africa",
+    "difficulty": 18.4
+  },
+  {
+    "iso": "COD",
+    "iso2": "CD",
+    "name": "DR Congo",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 108373786,
+    "continent": "Africa",
+    "difficulty": 10.94
+  },
+  {
+    "iso": "COG",
+    "iso2": "CG",
+    "name": "Republic of the Congo",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 6549063,
+    "continent": "Africa",
+    "difficulty": 25.99
   },
   {
     "iso": "COL",
@@ -76,7 +436,75 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 51927211
+    "total": 51927211,
+    "continent": "South America",
+    "difficulty": 32.93
+  },
+  {
+    "iso": "COM",
+    "iso2": "KM",
+    "name": "Comoros",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 789618,
+    "continent": "Africa",
+    "difficulty": 13.59
+  },
+  {
+    "iso": "CPV",
+    "iso2": "CV",
+    "name": "Cabo Verde",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 557522,
+    "continent": "Africa",
+    "difficulty": 19.36
+  },
+  {
+    "iso": "CRI",
+    "iso2": "CR",
+    "name": "Costa Rica",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 5231131,
+    "continent": "North America",
+    "difficulty": 9.8
+  },
+  {
+    "iso": "CUB",
+    "iso2": "CU",
+    "name": "Cuba",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 10797161,
+    "continent": "North America",
+    "difficulty": 5.46
+  },
+  {
+    "iso": "CYP",
+    "iso2": "CY",
+    "name": "Cyprus",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 792289,
+    "continent": "Asia",
+    "difficulty": 14.16
+  },
+  {
+    "iso": "CZE",
+    "iso2": "CZ",
+    "name": "Czechia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 10464669,
+    "continent": "Europe",
+    "difficulty": 6.27
   },
   {
     "iso": "DEU",
@@ -85,7 +513,75 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 83092940
+    "total": 83092940,
+    "continent": "Europe",
+    "difficulty": 9.22
+  },
+  {
+    "iso": "DJI",
+    "iso2": "DJ",
+    "name": "Djibouti",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 902887,
+    "continent": "Africa",
+    "difficulty": 36.42
+  },
+  {
+    "iso": "DMA",
+    "iso2": "DM",
+    "name": "Dominica",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 60996,
+    "continent": "North America",
+    "difficulty": 23.73
+  },
+  {
+    "iso": "DNK",
+    "iso2": "DK",
+    "name": "Denmark",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 5384124,
+    "continent": "Europe",
+    "difficulty": 14.67
+  },
+  {
+    "iso": "DOM",
+    "iso2": "DO",
+    "name": "Dominican Republic",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 11460582,
+    "continent": "North America",
+    "difficulty": 19.79
+  },
+  {
+    "iso": "DZA",
+    "iso2": "DZ",
+    "name": "Algeria",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 45878723,
+    "continent": "Africa",
+    "difficulty": 41.46
+  },
+  {
+    "iso": "ECU",
+    "iso2": "EC",
+    "name": "Ecuador",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 17906828,
+    "continent": "South America",
+    "difficulty": 20.6
   },
   {
     "iso": "EGY",
@@ -94,7 +590,20 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 113922615
+    "total": 113922615,
+    "continent": "Africa",
+    "difficulty": 40.34
+  },
+  {
+    "iso": "ERI",
+    "iso2": "ER",
+    "name": "Eritrea",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 3958414,
+    "continent": "Africa",
+    "difficulty": 4.59
   },
   {
     "iso": "ESP",
@@ -103,7 +612,20 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": "Excludes the Canary Islands",
     "metric": "population",
-    "total": 43340508
+    "total": 43340508,
+    "continent": "Europe",
+    "difficulty": 4.76
+  },
+  {
+    "iso": "EST",
+    "iso2": "EE",
+    "name": "Estonia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 1252980,
+    "continent": "Europe",
+    "difficulty": 20.75
   },
   {
     "iso": "ETH",
@@ -112,7 +634,31 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 131986608
+    "total": 131986608,
+    "continent": "Africa",
+    "difficulty": 15.15
+  },
+  {
+    "iso": "FIN",
+    "iso2": "FI",
+    "name": "Finland",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 5325972,
+    "continent": "Europe",
+    "difficulty": 33.9
+  },
+  {
+    "iso": "FJI",
+    "iso2": "FJ",
+    "name": "Fiji",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 852478,
+    "continent": "Oceania",
+    "difficulty": 22.75
   },
   {
     "iso": "FRA",
@@ -121,7 +667,31 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": "Metropolitan France",
     "metric": "population",
-    "total": 63525230
+    "total": 63525230,
+    "continent": "Europe",
+    "difficulty": 10.72
+  },
+  {
+    "iso": "FSM",
+    "iso2": "FM",
+    "name": "Micronesia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 54006,
+    "continent": "Oceania",
+    "difficulty": 25.95
+  },
+  {
+    "iso": "GAB",
+    "iso2": "GA",
+    "name": "Gabon",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 2267268,
+    "continent": "Africa",
+    "difficulty": 8.26
   },
   {
     "iso": "GBR",
@@ -130,7 +700,75 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 65991080
+    "total": 65991080,
+    "continent": "Europe",
+    "difficulty": 29.58
+  },
+  {
+    "iso": "GEO",
+    "iso2": "GE",
+    "name": "Georgia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 3585246,
+    "continent": "Asia",
+    "difficulty": 11.49
+  },
+  {
+    "iso": "GHA",
+    "iso2": "GH",
+    "name": "Ghana",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 34784680,
+    "continent": "Africa",
+    "difficulty": 22.5
+  },
+  {
+    "iso": "GIN",
+    "iso2": "GN",
+    "name": "Guinea",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 14773947,
+    "continent": "Africa",
+    "difficulty": 10.31
+  },
+  {
+    "iso": "GMB",
+    "iso2": "GM",
+    "name": "The Gambia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 2840333,
+    "continent": "Africa",
+    "difficulty": 28.41
+  },
+  {
+    "iso": "GNB",
+    "iso2": "GW",
+    "name": "Guinea-Bissau",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 2071093,
+    "continent": "Africa",
+    "difficulty": 15.46
+  },
+  {
+    "iso": "GNQ",
+    "iso2": "GQ",
+    "name": "Equatorial Guinea",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 1675261,
+    "continent": "Africa",
+    "difficulty": 35.7
   },
   {
     "iso": "GRC",
@@ -139,7 +777,86 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 9573503
+    "total": 9573503,
+    "continent": "Europe",
+    "difficulty": 10.91
+  },
+  {
+    "iso": "GRD",
+    "iso2": "GD",
+    "name": "Grenada",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 108909,
+    "continent": "North America",
+    "difficulty": 18.92
+  },
+  {
+    "iso": "GTM",
+    "iso2": "GT",
+    "name": "Guatemala",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 18578000,
+    "continent": "North America",
+    "difficulty": 27.06
+  },
+  {
+    "iso": "GUY",
+    "iso2": "GY",
+    "name": "Guyana",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 754756,
+    "continent": "South America",
+    "difficulty": 39.45
+  },
+  {
+    "iso": "HND",
+    "iso2": "HN",
+    "name": "Honduras",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 10762146,
+    "continent": "North America",
+    "difficulty": 23.36
+  },
+  {
+    "iso": "HRV",
+    "iso2": "HR",
+    "name": "Croatia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 3566081,
+    "continent": "Europe",
+    "difficulty": 18.7
+  },
+  {
+    "iso": "HTI",
+    "iso2": "HT",
+    "name": "Haiti",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 11048918,
+    "continent": "North America",
+    "difficulty": 8.64
+  },
+  {
+    "iso": "HUN",
+    "iso2": "HU",
+    "name": "Hungary",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 9894214,
+    "continent": "Europe",
+    "difficulty": 11.86
   },
   {
     "iso": "IDN",
@@ -148,7 +865,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 269446912
+    "total": 246893685,
+    "continent": "Asia",
+    "difficulty": 31.77
   },
   {
     "iso": "IND",
@@ -157,7 +876,64 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 1444142310
+    "total": 1443800116,
+    "continent": "Asia",
+    "difficulty": 5.88
+  },
+  {
+    "iso": "IRL",
+    "iso2": "IE",
+    "name": "Ireland",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 4958005,
+    "continent": "Europe",
+    "difficulty": 20.15
+  },
+  {
+    "iso": "IRN",
+    "iso2": "IR",
+    "name": "Iran",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 89607262,
+    "continent": "Asia",
+    "difficulty": 19.18
+  },
+  {
+    "iso": "IRQ",
+    "iso2": "IQ",
+    "name": "Iraq",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 47551988,
+    "continent": "Asia",
+    "difficulty": 20.1
+  },
+  {
+    "iso": "ISL",
+    "iso2": "IS",
+    "name": "Iceland",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 338770,
+    "continent": "Europe",
+    "difficulty": 36.15
+  },
+  {
+    "iso": "ISR",
+    "iso2": "IL",
+    "name": "Israel",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 8293301,
+    "continent": "Asia",
+    "difficulty": 37.05
   },
   {
     "iso": "ITA",
@@ -166,7 +942,31 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 57102583
+    "total": 57102583,
+    "continent": "Europe",
+    "difficulty": 6.62
+  },
+  {
+    "iso": "JAM",
+    "iso2": "JM",
+    "name": "Jamaica",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 2716663,
+    "continent": "North America",
+    "difficulty": 15.01
+  },
+  {
+    "iso": "JOR",
+    "iso2": "JO",
+    "name": "Jordan",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 11418728,
+    "continent": "Asia",
+    "difficulty": 43.44
   },
   {
     "iso": "JPN",
@@ -175,7 +975,20 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 118024932
+    "total": 116518408,
+    "continent": "Asia",
+    "difficulty": 22.79
+  },
+  {
+    "iso": "KAZ",
+    "iso2": "KZ",
+    "name": "Kazakhstan",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 19977880,
+    "continent": "Asia",
+    "difficulty": 15.36
   },
   {
     "iso": "KEN",
@@ -184,7 +997,53 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 57375637
+    "total": 57375637,
+    "continent": "Africa",
+    "difficulty": 21.7
+  },
+  {
+    "iso": "KGZ",
+    "iso2": "KG",
+    "name": "Kyrgyzstan",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 6856298,
+    "continent": "Asia",
+    "difficulty": 13.66
+  },
+  {
+    "iso": "KHM",
+    "iso2": "KH",
+    "name": "Cambodia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 17166867,
+    "continent": "Asia",
+    "difficulty": 15.05
+  },
+  {
+    "iso": "KIR",
+    "iso2": "KI",
+    "name": "Kiribati",
+    "pack": "countries",
+    "note": "Gilbert Islands",
+    "metric": "population",
+    "total": 46994,
+    "continent": "Oceania",
+    "difficulty": 41.68
+  },
+  {
+    "iso": "KNA",
+    "iso2": "KN",
+    "name": "Saint Kitts and Nevis",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 40676,
+    "continent": "North America",
+    "difficulty": 15.11
   },
   {
     "iso": "KOR",
@@ -193,7 +1052,196 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 48451649
+    "total": 48451649,
+    "continent": "Asia",
+    "difficulty": 17.41
+  },
+  {
+    "iso": "KWT",
+    "iso2": "KW",
+    "name": "Kuwait",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 4337719,
+    "continent": "Asia",
+    "difficulty": 44.89
+  },
+  {
+    "iso": "LAO",
+    "iso2": "LA",
+    "name": "Laos",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 7782097,
+    "continent": "Asia",
+    "difficulty": 6.67
+  },
+  {
+    "iso": "LBN",
+    "iso2": "LB",
+    "name": "Lebanon",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 5038787,
+    "continent": "Asia",
+    "difficulty": 21.07
+  },
+  {
+    "iso": "LBR",
+    "iso2": "LR",
+    "name": "Liberia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 5242777,
+    "continent": "Africa",
+    "difficulty": 19.84
+  },
+  {
+    "iso": "LBY",
+    "iso2": "LY",
+    "name": "Libya",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 6934163,
+    "continent": "Africa",
+    "difficulty": 35.44
+  },
+  {
+    "iso": "LCA",
+    "iso2": "LC",
+    "name": "Saint Lucia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 178414,
+    "continent": "North America",
+    "difficulty": 15.52
+  },
+  {
+    "iso": "LIE",
+    "iso2": "LI",
+    "name": "Liechtenstein",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 42216,
+    "continent": "Europe",
+    "difficulty": 15.27
+  },
+  {
+    "iso": "LKA",
+    "iso2": "LK",
+    "name": "Sri Lanka",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 20894414,
+    "continent": "Asia",
+    "difficulty": 24.02
+  },
+  {
+    "iso": "LSO",
+    "iso2": "LS",
+    "name": "Lesotho",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 2380891,
+    "continent": "Africa",
+    "difficulty": 17.49
+  },
+  {
+    "iso": "LTU",
+    "iso2": "LT",
+    "name": "Lithuania",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 2656790,
+    "continent": "Europe",
+    "difficulty": 10.98
+  },
+  {
+    "iso": "LUX",
+    "iso2": "LU",
+    "name": "Luxembourg",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 668108,
+    "continent": "Europe",
+    "difficulty": 26.58
+  },
+  {
+    "iso": "LVA",
+    "iso2": "LV",
+    "name": "Latvia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 1747277,
+    "continent": "Europe",
+    "difficulty": 20.55
+  },
+  {
+    "iso": "MAR",
+    "iso2": "MA",
+    "name": "Morocco",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 38849217,
+    "continent": "Africa",
+    "difficulty": 39.48
+  },
+  {
+    "iso": "MCO",
+    "iso2": "MC",
+    "name": "Monaco",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 47945,
+    "continent": "Europe",
+    "difficulty": 34.38
+  },
+  {
+    "iso": "MDA",
+    "iso2": "MD",
+    "name": "Moldova",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 3224024,
+    "continent": "Europe",
+    "difficulty": 11.77
+  },
+  {
+    "iso": "MDG",
+    "iso2": "MG",
+    "name": "Madagascar",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 31304167,
+    "continent": "Africa",
+    "difficulty": 12.24
+  },
+  {
+    "iso": "MDV",
+    "iso2": "MV",
+    "name": "Maldives",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 238024,
+    "continent": "Asia",
+    "difficulty": 45.67
   },
   {
     "iso": "MEX",
@@ -202,7 +1250,163 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 129487899
+    "total": 129336083,
+    "continent": "North America",
+    "difficulty": 25.52
+  },
+  {
+    "iso": "MHL",
+    "iso2": "MH",
+    "name": "Marshall Islands",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 4375,
+    "continent": "Oceania",
+    "difficulty": 24.5
+  },
+  {
+    "iso": "MKD",
+    "iso2": "MK",
+    "name": "North Macedonia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 2085352,
+    "continent": "Europe",
+    "difficulty": 18.32
+  },
+  {
+    "iso": "MLI",
+    "iso2": "ML",
+    "name": "Mali",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 24885667,
+    "continent": "Africa",
+    "difficulty": 38.23
+  },
+  {
+    "iso": "MLT",
+    "iso2": "MT",
+    "name": "Malta",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 521955,
+    "continent": "Europe",
+    "difficulty": 30.35
+  },
+  {
+    "iso": "MMR",
+    "iso2": "MM",
+    "name": "Myanmar",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 53118852,
+    "continent": "Asia",
+    "difficulty": 15.0
+  },
+  {
+    "iso": "MNE",
+    "iso2": "ME",
+    "name": "Montenegro",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 606461,
+    "continent": "Europe",
+    "difficulty": 23.39
+  },
+  {
+    "iso": "MNG",
+    "iso2": "MN",
+    "name": "Mongolia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 3541862,
+    "continent": "Asia",
+    "difficulty": 29.15
+  },
+  {
+    "iso": "MOZ",
+    "iso2": "MZ",
+    "name": "Mozambique",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 34946205,
+    "continent": "Africa",
+    "difficulty": 5.96
+  },
+  {
+    "iso": "MRT",
+    "iso2": "MR",
+    "name": "Mauritania",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 5167453,
+    "continent": "Africa",
+    "difficulty": 31.93
+  },
+  {
+    "iso": "MUS",
+    "iso2": "MU",
+    "name": "Mauritius",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 1276851,
+    "continent": "Africa",
+    "difficulty": 37.22
+  },
+  {
+    "iso": "MWI",
+    "iso2": "MW",
+    "name": "Malawi",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 22184200,
+    "continent": "Africa",
+    "difficulty": 20.69
+  },
+  {
+    "iso": "MYS",
+    "iso2": "MY",
+    "name": "Malaysia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 32323668,
+    "continent": "Asia",
+    "difficulty": 30.48
+  },
+  {
+    "iso": "NAM",
+    "iso2": "NA",
+    "name": "Namibia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 2711489,
+    "continent": "Africa",
+    "difficulty": 15.83
+  },
+  {
+    "iso": "NER",
+    "iso2": "NE",
+    "name": "Niger",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 29383327,
+    "continent": "Africa",
+    "difficulty": 36.59
   },
   {
     "iso": "NGA",
@@ -211,7 +1415,31 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 232678210
+    "total": 232678210,
+    "continent": "Africa",
+    "difficulty": 10.89
+  },
+  {
+    "iso": "NIC",
+    "iso2": "NI",
+    "name": "Nicaragua",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 7127916,
+    "continent": "North America",
+    "difficulty": 26.1
+  },
+  {
+    "iso": "NLD",
+    "iso2": "NL",
+    "name": "Netherlands",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 17484959,
+    "continent": "Europe",
+    "difficulty": 15.48
   },
   {
     "iso": "NOR",
@@ -220,7 +1448,31 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": "Excludes Svalbard",
     "metric": "population",
-    "total": 4845596
+    "total": 4845596,
+    "continent": "Europe",
+    "difficulty": 36.58
+  },
+  {
+    "iso": "NPL",
+    "iso2": "NP",
+    "name": "Nepal",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 32679196,
+    "continent": "Asia",
+    "difficulty": 20.38
+  },
+  {
+    "iso": "NRU",
+    "iso2": "NR",
+    "name": "Nauru",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 10593,
+    "continent": "Oceania",
+    "difficulty": 13.52
   },
   {
     "iso": "NZL",
@@ -229,7 +1481,42 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 4877874
+    "total": 4877874,
+    "continent": "Oceania",
+    "difficulty": 24.36
+  },
+  {
+    "iso": "OMN",
+    "iso2": "OM",
+    "name": "Oman",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 4799576,
+    "continent": "Asia",
+    "difficulty": 33.52
+  },
+  {
+    "iso": "PAK",
+    "iso2": "PK",
+    "name": "Pakistan",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 249095410,
+    "continent": "Asia",
+    "difficulty": 22.56
+  },
+  {
+    "iso": "PAN",
+    "iso2": "PA",
+    "name": "Panama",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 4508436,
+    "continent": "North America",
+    "difficulty": 17.8
   },
   {
     "iso": "PER",
@@ -238,7 +1525,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 34283532
+    "total": 34283532,
+    "continent": "South America",
+    "difficulty": 25.46
   },
   {
     "iso": "PHL",
@@ -247,7 +1536,86 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 109254197
+    "total": 108859691,
+    "continent": "Asia",
+    "difficulty": 11.51
+  },
+  {
+    "iso": "PLW",
+    "iso2": "PW",
+    "name": "Palau",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 8818,
+    "continent": "Oceania",
+    "difficulty": 39.98
+  },
+  {
+    "iso": "PNG",
+    "iso2": "PG",
+    "name": "Papua New Guinea",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 9548806,
+    "continent": "Oceania",
+    "difficulty": 11.82
+  },
+  {
+    "iso": "POL",
+    "iso2": "PL",
+    "name": "Poland",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 39685038,
+    "continent": "Europe",
+    "difficulty": 8.4
+  },
+  {
+    "iso": "PRT",
+    "iso2": "PT",
+    "name": "Portugal",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 8902771,
+    "continent": "Europe",
+    "difficulty": 15.44
+  },
+  {
+    "iso": "PRY",
+    "iso2": "PY",
+    "name": "Paraguay",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 6860957,
+    "continent": "South America",
+    "difficulty": 39.03
+  },
+  {
+    "iso": "QAT",
+    "iso2": "QA",
+    "name": "Qatar",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 2706995,
+    "continent": "Asia",
+    "difficulty": 37.28
+  },
+  {
+    "iso": "ROU",
+    "iso2": "RO",
+    "name": "Romania",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 19265616,
+    "continent": "Europe",
+    "difficulty": 6.88
   },
   {
     "iso": "RUS",
@@ -256,7 +1624,20 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 144931425
+    "total": 141642327,
+    "continent": "Europe",
+    "difficulty": 37.85
+  },
+  {
+    "iso": "RWA",
+    "iso2": "RW",
+    "name": "Rwanda",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 14659876,
+    "continent": "Africa",
+    "difficulty": 3.7
   },
   {
     "iso": "SAU",
@@ -265,7 +1646,163 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 37209110
+    "total": 37209110,
+    "continent": "Asia",
+    "difficulty": 4.34
+  },
+  {
+    "iso": "SDN",
+    "iso2": "SD",
+    "name": "Sudan",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 50710114,
+    "continent": "Africa",
+    "difficulty": 19.51
+  },
+  {
+    "iso": "SDS",
+    "iso2": "SS",
+    "name": "South Sudan",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 11470831,
+    "continent": "Africa",
+    "difficulty": 22.14
+  },
+  {
+    "iso": "SEN",
+    "iso2": "SN",
+    "name": "Senegal",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 18367220,
+    "continent": "Africa",
+    "difficulty": 30.77
+  },
+  {
+    "iso": "SGP",
+    "iso2": "SG",
+    "name": "Singapore",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 5687348,
+    "continent": "Asia",
+    "difficulty": 11.5
+  },
+  {
+    "iso": "SLB",
+    "iso2": "SB",
+    "name": "Solomon Islands",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 495196,
+    "continent": "Oceania",
+    "difficulty": 25.95
+  },
+  {
+    "iso": "SLE",
+    "iso2": "SL",
+    "name": "Sierra Leone",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 8451514,
+    "continent": "Africa",
+    "difficulty": 11.03
+  },
+  {
+    "iso": "SLV",
+    "iso2": "SV",
+    "name": "El Salvador",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 6366049,
+    "continent": "North America",
+    "difficulty": 22.13
+  },
+  {
+    "iso": "SMR",
+    "iso2": "SM",
+    "name": "San Marino",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 26271,
+    "continent": "Europe",
+    "difficulty": 20.58
+  },
+  {
+    "iso": "SOM",
+    "iso2": "SO",
+    "name": "Somalia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 14087462,
+    "continent": "Africa",
+    "difficulty": 26.23
+  },
+  {
+    "iso": "SRB",
+    "iso2": "RS",
+    "name": "Serbia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 7166162,
+    "continent": "Europe",
+    "difficulty": 14.44
+  },
+  {
+    "iso": "STP",
+    "iso2": "ST",
+    "name": "S\u00e3o Tom\u00e9 and Pr\u00edncipe",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 227924,
+    "continent": "Africa",
+    "difficulty": 41.24
+  },
+  {
+    "iso": "SUR",
+    "iso2": "SR",
+    "name": "Suriname",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 626740,
+    "continent": "South America",
+    "difficulty": 45.43
+  },
+  {
+    "iso": "SVK",
+    "iso2": "SK",
+    "name": "Slovakia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 5605232,
+    "continent": "Europe",
+    "difficulty": 7.29
+  },
+  {
+    "iso": "SVN",
+    "iso2": "SI",
+    "name": "Slovenia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 2129293,
+    "continent": "Europe",
+    "difficulty": 4.82
   },
   {
     "iso": "SWE",
@@ -274,7 +1811,64 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 9826643
+    "total": 9826643,
+    "continent": "Europe",
+    "difficulty": 36.56
+  },
+  {
+    "iso": "SWZ",
+    "iso2": "SZ",
+    "name": "Eswatini",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 1229877,
+    "continent": "Africa",
+    "difficulty": 11.8
+  },
+  {
+    "iso": "SYC",
+    "iso2": "SC",
+    "name": "Seychelles",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 102737,
+    "continent": "Africa",
+    "difficulty": 49.05
+  },
+  {
+    "iso": "SYR",
+    "iso2": "SY",
+    "name": "Syria",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 24948082,
+    "continent": "Asia",
+    "difficulty": 20.28
+  },
+  {
+    "iso": "TCD",
+    "iso2": "TD",
+    "name": "Chad",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 19528590,
+    "continent": "Africa",
+    "difficulty": 29.71
+  },
+  {
+    "iso": "TGO",
+    "iso2": "TG",
+    "name": "Togo",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 9454730,
+    "continent": "Africa",
+    "difficulty": 18.61
   },
   {
     "iso": "THA",
@@ -283,7 +1877,75 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 71257522
+    "total": 71257522,
+    "continent": "Asia",
+    "difficulty": 15.26
+  },
+  {
+    "iso": "TJK",
+    "iso2": "TJ",
+    "name": "Tajikistan",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 10621929,
+    "continent": "Asia",
+    "difficulty": 33.19
+  },
+  {
+    "iso": "TKM",
+    "iso2": "TM",
+    "name": "Turkmenistan",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 6865731,
+    "continent": "Asia",
+    "difficulty": 13.12
+  },
+  {
+    "iso": "TLS",
+    "iso2": "TL",
+    "name": "Timor-Leste",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 1351647,
+    "continent": "Asia",
+    "difficulty": 20.84
+  },
+  {
+    "iso": "TON",
+    "iso2": "TO",
+    "name": "Tonga",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 45543,
+    "continent": "Oceania",
+    "difficulty": 24.42
+  },
+  {
+    "iso": "TTO",
+    "iso2": "TT",
+    "name": "Trinidad and Tobago",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 1489034,
+    "continent": "North America",
+    "difficulty": 22.23
+  },
+  {
+    "iso": "TUN",
+    "iso2": "TN",
+    "name": "Tunisia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 11619781,
+    "continent": "Africa",
+    "difficulty": 34.69
   },
   {
     "iso": "TUR",
@@ -292,7 +1954,64 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 83357255
+    "total": 83357255,
+    "continent": "Asia",
+    "difficulty": 13.77
+  },
+  {
+    "iso": "TUV",
+    "iso2": "TV",
+    "name": "Tuvalu",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 340,
+    "continent": "Oceania",
+    "difficulty": 48.64
+  },
+  {
+    "iso": "TZA",
+    "iso2": "TZ",
+    "name": "Tanzania",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 71002628,
+    "continent": "Africa",
+    "difficulty": 8.98
+  },
+  {
+    "iso": "UGA",
+    "iso2": "UG",
+    "name": "Uganda",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 51400026,
+    "continent": "Africa",
+    "difficulty": 8.37
+  },
+  {
+    "iso": "UKR",
+    "iso2": "UA",
+    "name": "Ukraine",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 36492540,
+    "continent": "Europe",
+    "difficulty": 2.47
+  },
+  {
+    "iso": "URY",
+    "iso2": "UY",
+    "name": "Uruguay",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 3314623,
+    "continent": "South America",
+    "difficulty": 28.79
   },
   {
     "iso": "USA",
@@ -301,7 +2020,42 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": "Contiguous states",
     "metric": "population",
-    "total": 336300925
+    "total": 336300925,
+    "continent": "North America",
+    "difficulty": 16.38
+  },
+  {
+    "iso": "UZB",
+    "iso2": "UZ",
+    "name": "Uzbekistan",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 36263650,
+    "continent": "Asia",
+    "difficulty": 31.2
+  },
+  {
+    "iso": "VCT",
+    "iso2": "VC",
+    "name": "Saint Vincent and the Grenadines",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 76917,
+    "continent": "North America",
+    "difficulty": 22.17
+  },
+  {
+    "iso": "VEN",
+    "iso2": "VE",
+    "name": "Venezuela",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 28672772,
+    "continent": "South America",
+    "difficulty": 30.58
   },
   {
     "iso": "VNM",
@@ -310,7 +2064,42 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 97417594
+    "total": 97417594,
+    "continent": "Asia",
+    "difficulty": 6.34
+  },
+  {
+    "iso": "VUT",
+    "iso2": "VU",
+    "name": "Vanuatu",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 265223,
+    "continent": "Oceania",
+    "difficulty": 15.57
+  },
+  {
+    "iso": "WSM",
+    "iso2": "WS",
+    "name": "Samoa",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 184812,
+    "continent": "Oceania",
+    "difficulty": 29.95
+  },
+  {
+    "iso": "YEM",
+    "iso2": "YE",
+    "name": "Yemen",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 35307846,
+    "continent": "Asia",
+    "difficulty": 37.64
   },
   {
     "iso": "ZAF",
@@ -319,7 +2108,31 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "countries",
     "note": null,
     "metric": "population",
-    "total": 61272224
+    "total": 61272224,
+    "continent": "Africa",
+    "difficulty": 21.66
+  },
+  {
+    "iso": "ZMB",
+    "iso2": "ZM",
+    "name": "Zambia",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 21813404,
+    "continent": "Africa",
+    "difficulty": 11.24
+  },
+  {
+    "iso": "ZWE",
+    "iso2": "ZW",
+    "name": "Zimbabwe",
+    "pack": "countries",
+    "note": null,
+    "metric": "population",
+    "total": 17332485,
+    "continent": "Africa",
+    "difficulty": 15.71
   },
   {
     "iso": "BHR",
@@ -328,7 +2141,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "islands",
     "note": null,
     "metric": "population",
-    "total": 1314053
+    "total": 1314053,
+    "continent": "Asia",
+    "difficulty": 43.73
   },
   {
     "iso": "BHS",
@@ -337,7 +2152,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "islands",
     "note": null,
     "metric": "population",
-    "total": 330730
+    "total": 330730,
+    "continent": "North America",
+    "difficulty": 44.53
   },
   {
     "iso": "BRB",
@@ -346,7 +2163,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "islands",
     "note": null,
     "metric": "population",
-    "total": 256894
+    "total": 256894,
+    "continent": "North America",
+    "difficulty": 21.71
   },
   {
     "iso": "CPV",
@@ -355,7 +2174,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "islands",
     "note": null,
     "metric": "population",
-    "total": 557522
+    "total": 557522,
+    "continent": "Africa",
+    "difficulty": 19.36
   },
   {
     "iso": "CUB",
@@ -364,7 +2185,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "islands",
     "note": null,
     "metric": "population",
-    "total": 11025567
+    "total": 11025567,
+    "continent": "North America",
+    "difficulty": 5.45
   },
   {
     "iso": "FJI",
@@ -373,7 +2196,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "islands",
     "note": "Main island groups",
     "metric": "population",
-    "total": 859786
+    "total": 859786,
+    "continent": "Oceania",
+    "difficulty": 22.73
   },
   {
     "iso": "ISL",
@@ -382,7 +2207,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "islands",
     "note": null,
     "metric": "population",
-    "total": 344713
+    "total": 344713,
+    "continent": "Europe",
+    "difficulty": 37.4
   },
   {
     "iso": "JAM",
@@ -391,7 +2218,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "islands",
     "note": null,
     "metric": "population",
-    "total": 2736461
+    "total": 2736461,
+    "continent": "North America",
+    "difficulty": 15.04
   },
   {
     "iso": "LKA",
@@ -400,7 +2229,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "islands",
     "note": null,
     "metric": "population",
-    "total": 21740489
+    "total": 21740489,
+    "continent": "Asia",
+    "difficulty": 23.68
   },
   {
     "iso": "MLT",
@@ -409,7 +2240,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "islands",
     "note": null,
     "metric": "population",
-    "total": 521955
+    "total": 521955,
+    "continent": "Europe",
+    "difficulty": 30.34
   },
   {
     "iso": "MUS",
@@ -418,7 +2251,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "islands",
     "note": "Main island only",
     "metric": "population",
-    "total": 1241606
+    "total": 1241606,
+    "continent": "Africa",
+    "difficulty": 13.3
   },
   {
     "iso": "PRI",
@@ -427,7 +2262,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "islands",
     "note": null,
     "metric": "population",
-    "total": 3257611
+    "total": 3257611,
+    "continent": null,
+    "difficulty": 14.95
   },
   {
     "iso": "SGP",
@@ -436,7 +2273,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "islands",
     "note": null,
     "metric": "population",
-    "total": 5687348
+    "total": 5687348,
+    "continent": "Asia",
+    "difficulty": 11.51
   },
   {
     "iso": "TTO",
@@ -445,7 +2284,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "islands",
     "note": null,
     "metric": "population",
-    "total": 1502699
+    "total": 1502699,
+    "continent": "North America",
+    "difficulty": 22.12
   },
   {
     "iso": "WSM",
@@ -454,7 +2295,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "islands",
     "note": null,
     "metric": "population",
-    "total": 184812
+    "total": 184812,
+    "continent": "Oceania",
+    "difficulty": 29.94
   },
   {
     "iso": "ARG",
@@ -463,7 +2306,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 1433415382774
+    "total": 1423057237899,
+    "continent": "South America",
+    "difficulty": 29.63
   },
   {
     "iso": "AUS",
@@ -472,7 +2317,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 1876695980985
+    "total": 1876695980985,
+    "continent": "Oceania",
+    "difficulty": 30.6
   },
   {
     "iso": "BRA",
@@ -481,7 +2328,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 4758452781337
+    "total": 4741532708086,
+    "continent": "South America",
+    "difficulty": 33.89
   },
   {
     "iso": "CAN",
@@ -490,7 +2339,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 2452345618741
+    "total": 2016711486685,
+    "continent": "North America",
+    "difficulty": 25.54
   },
   {
     "iso": "CHL",
@@ -499,7 +2350,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 663914373072
+    "total": 663914373072,
+    "continent": "South America",
+    "difficulty": 31.47
   },
   {
     "iso": "CHN",
@@ -508,7 +2361,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 38058977008376
+    "total": 37694739882195,
+    "continent": "Asia",
+    "difficulty": 34.09
   },
   {
     "iso": "DEU",
@@ -517,7 +2372,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 5980280361517
+    "total": 5980280361517,
+    "continent": "Europe",
+    "difficulty": 10.42
   },
   {
     "iso": "EGY",
@@ -526,7 +2383,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 2162527536409
+    "total": 2162527536409,
+    "continent": "Africa",
+    "difficulty": 40.44
   },
   {
     "iso": "ESP",
@@ -535,7 +2394,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": "Excludes the Canary Islands",
     "metric": "gdp",
-    "total": 2494485430057
+    "total": 2494485430057,
+    "continent": "Europe",
+    "difficulty": 6.24
   },
   {
     "iso": "FRA",
@@ -544,7 +2405,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": "Metropolitan France",
     "metric": "gdp",
-    "total": 3950329630544
+    "total": 3950329630544,
+    "continent": "Europe",
+    "difficulty": 16.05
   },
   {
     "iso": "GBR",
@@ -553,7 +2416,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 3788930048604
+    "total": 3788930048604,
+    "continent": "Europe",
+    "difficulty": 31.63
   },
   {
     "iso": "IDN",
@@ -562,7 +2427,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 4468511494069
+    "total": 4211709533765,
+    "continent": "Asia",
+    "difficulty": 31.42
   },
   {
     "iso": "IND",
@@ -571,7 +2438,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 16199022240127
+    "total": 16192677089177,
+    "continent": "Asia",
+    "difficulty": 8.64
   },
   {
     "iso": "ITA",
@@ -580,7 +2449,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 3420693136502
+    "total": 3420693136502,
+    "continent": "Europe",
+    "difficulty": 14.49
   },
   {
     "iso": "JPN",
@@ -589,7 +2460,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 5947991435902
+    "total": 5899443858030,
+    "continent": "Asia",
+    "difficulty": 24.63
   },
   {
     "iso": "KOR",
@@ -598,7 +2471,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 2630726601114
+    "total": 2630726601114,
+    "continent": "Asia",
+    "difficulty": 21.08
   },
   {
     "iso": "MEX",
@@ -607,7 +2482,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 3229597588219
+    "total": 3224108984740,
+    "continent": "North America",
+    "difficulty": 19.2
   },
   {
     "iso": "NGA",
@@ -616,7 +2493,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 1486611556955
+    "total": 1486611556955,
+    "continent": "Africa",
+    "difficulty": 20.05
   },
   {
     "iso": "RUS",
@@ -625,7 +2504,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 6698253693735
+    "total": 6574396825981,
+    "continent": "Europe",
+    "difficulty": 38.48
   },
   {
     "iso": "SAU",
@@ -634,7 +2515,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 2531792727738
+    "total": 2531792727738,
+    "continent": "Asia",
+    "difficulty": 5.95
   },
   {
     "iso": "TUR",
@@ -643,7 +2526,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 3671663173539
+    "total": 3671663173539,
+    "continent": "Asia",
+    "difficulty": 26.06
   },
   {
     "iso": "USA",
@@ -652,7 +2537,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": "Contiguous states",
     "metric": "gdp",
-    "total": 28767154808950
+    "total": 28767154808950,
+    "continent": "North America",
+    "difficulty": 14.65
   },
   {
     "iso": "ZAF",
@@ -661,7 +2548,9 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "economy",
     "note": null,
     "metric": "gdp",
-    "total": 953245109532
+    "total": 953245109532,
+    "continent": "Africa",
+    "difficulty": 22.81
   },
   {
     "iso": "USA",
@@ -670,47 +2559,207 @@ export const PACK_INDEX: PackEntry[] = [
     "pack": "billionaires",
     "note": "Contiguous states",
     "metric": "billionaires",
-    "total": 232
+    "total": 232,
+    "continent": "North America",
+    "difficulty": 8.01
   }
 ];
 
 /** Keyed by `${pack}/${iso}`. A pack is only parsed when first played. */
 export const LOADERS: Record<string, () => CountryPack> = {
   "world/WLD": () => require("./packs/world/WLD.json"),
+  "countries/AFG": () => require("./packs/countries/AFG.json"),
+  "countries/AGO": () => require("./packs/countries/AGO.json"),
+  "countries/ALB": () => require("./packs/countries/ALB.json"),
+  "countries/AND": () => require("./packs/countries/AND.json"),
+  "countries/ARE": () => require("./packs/countries/ARE.json"),
   "countries/ARG": () => require("./packs/countries/ARG.json"),
+  "countries/ARM": () => require("./packs/countries/ARM.json"),
+  "countries/ATG": () => require("./packs/countries/ATG.json"),
   "countries/AUS": () => require("./packs/countries/AUS.json"),
+  "countries/AUT": () => require("./packs/countries/AUT.json"),
+  "countries/AZE": () => require("./packs/countries/AZE.json"),
+  "countries/BDI": () => require("./packs/countries/BDI.json"),
+  "countries/BEL": () => require("./packs/countries/BEL.json"),
+  "countries/BEN": () => require("./packs/countries/BEN.json"),
+  "countries/BFA": () => require("./packs/countries/BFA.json"),
+  "countries/BGD": () => require("./packs/countries/BGD.json"),
+  "countries/BGR": () => require("./packs/countries/BGR.json"),
+  "countries/BHR": () => require("./packs/countries/BHR.json"),
+  "countries/BHS": () => require("./packs/countries/BHS.json"),
+  "countries/BIH": () => require("./packs/countries/BIH.json"),
+  "countries/BLR": () => require("./packs/countries/BLR.json"),
+  "countries/BLZ": () => require("./packs/countries/BLZ.json"),
+  "countries/BOL": () => require("./packs/countries/BOL.json"),
   "countries/BRA": () => require("./packs/countries/BRA.json"),
+  "countries/BRB": () => require("./packs/countries/BRB.json"),
+  "countries/BRN": () => require("./packs/countries/BRN.json"),
+  "countries/BTN": () => require("./packs/countries/BTN.json"),
+  "countries/BWA": () => require("./packs/countries/BWA.json"),
+  "countries/CAF": () => require("./packs/countries/CAF.json"),
   "countries/CAN": () => require("./packs/countries/CAN.json"),
+  "countries/CHE": () => require("./packs/countries/CHE.json"),
   "countries/CHL": () => require("./packs/countries/CHL.json"),
   "countries/CHN": () => require("./packs/countries/CHN.json"),
+  "countries/CIV": () => require("./packs/countries/CIV.json"),
+  "countries/CMR": () => require("./packs/countries/CMR.json"),
+  "countries/COD": () => require("./packs/countries/COD.json"),
+  "countries/COG": () => require("./packs/countries/COG.json"),
   "countries/COL": () => require("./packs/countries/COL.json"),
+  "countries/COM": () => require("./packs/countries/COM.json"),
+  "countries/CPV": () => require("./packs/countries/CPV.json"),
+  "countries/CRI": () => require("./packs/countries/CRI.json"),
+  "countries/CUB": () => require("./packs/countries/CUB.json"),
+  "countries/CYP": () => require("./packs/countries/CYP.json"),
+  "countries/CZE": () => require("./packs/countries/CZE.json"),
   "countries/DEU": () => require("./packs/countries/DEU.json"),
+  "countries/DJI": () => require("./packs/countries/DJI.json"),
+  "countries/DMA": () => require("./packs/countries/DMA.json"),
+  "countries/DNK": () => require("./packs/countries/DNK.json"),
+  "countries/DOM": () => require("./packs/countries/DOM.json"),
+  "countries/DZA": () => require("./packs/countries/DZA.json"),
+  "countries/ECU": () => require("./packs/countries/ECU.json"),
   "countries/EGY": () => require("./packs/countries/EGY.json"),
+  "countries/ERI": () => require("./packs/countries/ERI.json"),
   "countries/ESP": () => require("./packs/countries/ESP.json"),
+  "countries/EST": () => require("./packs/countries/EST.json"),
   "countries/ETH": () => require("./packs/countries/ETH.json"),
+  "countries/FIN": () => require("./packs/countries/FIN.json"),
+  "countries/FJI": () => require("./packs/countries/FJI.json"),
   "countries/FRA": () => require("./packs/countries/FRA.json"),
+  "countries/FSM": () => require("./packs/countries/FSM.json"),
+  "countries/GAB": () => require("./packs/countries/GAB.json"),
   "countries/GBR": () => require("./packs/countries/GBR.json"),
+  "countries/GEO": () => require("./packs/countries/GEO.json"),
+  "countries/GHA": () => require("./packs/countries/GHA.json"),
+  "countries/GIN": () => require("./packs/countries/GIN.json"),
+  "countries/GMB": () => require("./packs/countries/GMB.json"),
+  "countries/GNB": () => require("./packs/countries/GNB.json"),
+  "countries/GNQ": () => require("./packs/countries/GNQ.json"),
   "countries/GRC": () => require("./packs/countries/GRC.json"),
+  "countries/GRD": () => require("./packs/countries/GRD.json"),
+  "countries/GTM": () => require("./packs/countries/GTM.json"),
+  "countries/GUY": () => require("./packs/countries/GUY.json"),
+  "countries/HND": () => require("./packs/countries/HND.json"),
+  "countries/HRV": () => require("./packs/countries/HRV.json"),
+  "countries/HTI": () => require("./packs/countries/HTI.json"),
+  "countries/HUN": () => require("./packs/countries/HUN.json"),
   "countries/IDN": () => require("./packs/countries/IDN.json"),
   "countries/IND": () => require("./packs/countries/IND.json"),
+  "countries/IRL": () => require("./packs/countries/IRL.json"),
+  "countries/IRN": () => require("./packs/countries/IRN.json"),
+  "countries/IRQ": () => require("./packs/countries/IRQ.json"),
+  "countries/ISL": () => require("./packs/countries/ISL.json"),
+  "countries/ISR": () => require("./packs/countries/ISR.json"),
   "countries/ITA": () => require("./packs/countries/ITA.json"),
+  "countries/JAM": () => require("./packs/countries/JAM.json"),
+  "countries/JOR": () => require("./packs/countries/JOR.json"),
   "countries/JPN": () => require("./packs/countries/JPN.json"),
+  "countries/KAZ": () => require("./packs/countries/KAZ.json"),
   "countries/KEN": () => require("./packs/countries/KEN.json"),
+  "countries/KGZ": () => require("./packs/countries/KGZ.json"),
+  "countries/KHM": () => require("./packs/countries/KHM.json"),
+  "countries/KIR": () => require("./packs/countries/KIR.json"),
+  "countries/KNA": () => require("./packs/countries/KNA.json"),
   "countries/KOR": () => require("./packs/countries/KOR.json"),
+  "countries/KWT": () => require("./packs/countries/KWT.json"),
+  "countries/LAO": () => require("./packs/countries/LAO.json"),
+  "countries/LBN": () => require("./packs/countries/LBN.json"),
+  "countries/LBR": () => require("./packs/countries/LBR.json"),
+  "countries/LBY": () => require("./packs/countries/LBY.json"),
+  "countries/LCA": () => require("./packs/countries/LCA.json"),
+  "countries/LIE": () => require("./packs/countries/LIE.json"),
+  "countries/LKA": () => require("./packs/countries/LKA.json"),
+  "countries/LSO": () => require("./packs/countries/LSO.json"),
+  "countries/LTU": () => require("./packs/countries/LTU.json"),
+  "countries/LUX": () => require("./packs/countries/LUX.json"),
+  "countries/LVA": () => require("./packs/countries/LVA.json"),
+  "countries/MAR": () => require("./packs/countries/MAR.json"),
+  "countries/MCO": () => require("./packs/countries/MCO.json"),
+  "countries/MDA": () => require("./packs/countries/MDA.json"),
+  "countries/MDG": () => require("./packs/countries/MDG.json"),
+  "countries/MDV": () => require("./packs/countries/MDV.json"),
   "countries/MEX": () => require("./packs/countries/MEX.json"),
+  "countries/MHL": () => require("./packs/countries/MHL.json"),
+  "countries/MKD": () => require("./packs/countries/MKD.json"),
+  "countries/MLI": () => require("./packs/countries/MLI.json"),
+  "countries/MLT": () => require("./packs/countries/MLT.json"),
+  "countries/MMR": () => require("./packs/countries/MMR.json"),
+  "countries/MNE": () => require("./packs/countries/MNE.json"),
+  "countries/MNG": () => require("./packs/countries/MNG.json"),
+  "countries/MOZ": () => require("./packs/countries/MOZ.json"),
+  "countries/MRT": () => require("./packs/countries/MRT.json"),
+  "countries/MUS": () => require("./packs/countries/MUS.json"),
+  "countries/MWI": () => require("./packs/countries/MWI.json"),
+  "countries/MYS": () => require("./packs/countries/MYS.json"),
+  "countries/NAM": () => require("./packs/countries/NAM.json"),
+  "countries/NER": () => require("./packs/countries/NER.json"),
   "countries/NGA": () => require("./packs/countries/NGA.json"),
+  "countries/NIC": () => require("./packs/countries/NIC.json"),
+  "countries/NLD": () => require("./packs/countries/NLD.json"),
   "countries/NOR": () => require("./packs/countries/NOR.json"),
+  "countries/NPL": () => require("./packs/countries/NPL.json"),
+  "countries/NRU": () => require("./packs/countries/NRU.json"),
   "countries/NZL": () => require("./packs/countries/NZL.json"),
+  "countries/OMN": () => require("./packs/countries/OMN.json"),
+  "countries/PAK": () => require("./packs/countries/PAK.json"),
+  "countries/PAN": () => require("./packs/countries/PAN.json"),
   "countries/PER": () => require("./packs/countries/PER.json"),
   "countries/PHL": () => require("./packs/countries/PHL.json"),
+  "countries/PLW": () => require("./packs/countries/PLW.json"),
+  "countries/PNG": () => require("./packs/countries/PNG.json"),
+  "countries/POL": () => require("./packs/countries/POL.json"),
+  "countries/PRT": () => require("./packs/countries/PRT.json"),
+  "countries/PRY": () => require("./packs/countries/PRY.json"),
+  "countries/QAT": () => require("./packs/countries/QAT.json"),
+  "countries/ROU": () => require("./packs/countries/ROU.json"),
   "countries/RUS": () => require("./packs/countries/RUS.json"),
+  "countries/RWA": () => require("./packs/countries/RWA.json"),
   "countries/SAU": () => require("./packs/countries/SAU.json"),
+  "countries/SDN": () => require("./packs/countries/SDN.json"),
+  "countries/SDS": () => require("./packs/countries/SDS.json"),
+  "countries/SEN": () => require("./packs/countries/SEN.json"),
+  "countries/SGP": () => require("./packs/countries/SGP.json"),
+  "countries/SLB": () => require("./packs/countries/SLB.json"),
+  "countries/SLE": () => require("./packs/countries/SLE.json"),
+  "countries/SLV": () => require("./packs/countries/SLV.json"),
+  "countries/SMR": () => require("./packs/countries/SMR.json"),
+  "countries/SOM": () => require("./packs/countries/SOM.json"),
+  "countries/SRB": () => require("./packs/countries/SRB.json"),
+  "countries/STP": () => require("./packs/countries/STP.json"),
+  "countries/SUR": () => require("./packs/countries/SUR.json"),
+  "countries/SVK": () => require("./packs/countries/SVK.json"),
+  "countries/SVN": () => require("./packs/countries/SVN.json"),
   "countries/SWE": () => require("./packs/countries/SWE.json"),
+  "countries/SWZ": () => require("./packs/countries/SWZ.json"),
+  "countries/SYC": () => require("./packs/countries/SYC.json"),
+  "countries/SYR": () => require("./packs/countries/SYR.json"),
+  "countries/TCD": () => require("./packs/countries/TCD.json"),
+  "countries/TGO": () => require("./packs/countries/TGO.json"),
   "countries/THA": () => require("./packs/countries/THA.json"),
+  "countries/TJK": () => require("./packs/countries/TJK.json"),
+  "countries/TKM": () => require("./packs/countries/TKM.json"),
+  "countries/TLS": () => require("./packs/countries/TLS.json"),
+  "countries/TON": () => require("./packs/countries/TON.json"),
+  "countries/TTO": () => require("./packs/countries/TTO.json"),
+  "countries/TUN": () => require("./packs/countries/TUN.json"),
   "countries/TUR": () => require("./packs/countries/TUR.json"),
+  "countries/TUV": () => require("./packs/countries/TUV.json"),
+  "countries/TZA": () => require("./packs/countries/TZA.json"),
+  "countries/UGA": () => require("./packs/countries/UGA.json"),
+  "countries/UKR": () => require("./packs/countries/UKR.json"),
+  "countries/URY": () => require("./packs/countries/URY.json"),
   "countries/USA": () => require("./packs/countries/USA.json"),
+  "countries/UZB": () => require("./packs/countries/UZB.json"),
+  "countries/VCT": () => require("./packs/countries/VCT.json"),
+  "countries/VEN": () => require("./packs/countries/VEN.json"),
   "countries/VNM": () => require("./packs/countries/VNM.json"),
+  "countries/VUT": () => require("./packs/countries/VUT.json"),
+  "countries/WSM": () => require("./packs/countries/WSM.json"),
+  "countries/YEM": () => require("./packs/countries/YEM.json"),
   "countries/ZAF": () => require("./packs/countries/ZAF.json"),
+  "countries/ZMB": () => require("./packs/countries/ZMB.json"),
+  "countries/ZWE": () => require("./packs/countries/ZWE.json"),
   "islands/BHR": () => require("./packs/islands/BHR.json"),
   "islands/BHS": () => require("./packs/islands/BHS.json"),
   "islands/BRB": () => require("./packs/islands/BRB.json"),

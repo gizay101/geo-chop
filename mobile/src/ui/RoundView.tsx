@@ -6,7 +6,7 @@ import * as Haptics from "expo-haptics";
 
 import { playSfx } from "@/audio/sfx";
 import { flagOf, METRIC_WORDS } from "@/data/packs";
-import { cutCrossesLand, perfectCut, splitShareCut, type Cut } from "@/game/geometry";
+import { cutCrossesLand, isCleanFreehandCut, perfectCut, splitShareCut, type Cut } from "@/game/geometry";
 import { gradeFor, scoreFor, type Grade } from "@/game/scoring";
 import { FIREWORKS_MAX_ERROR, T } from "@/game/timeline";
 import type { CountryPack } from "@/game/types";
@@ -51,6 +51,8 @@ export function RoundView({ country, tool = "line", label, allowRetry, nextLabel
 
   const canChop = !!cut && cutCrossesLand(country.rings, cut);
   const onCutChange = useCallback((c: Cut | null) => setCut(c), []);
+  // Freehand: no button. A clean stroke (starts and ends off the land) chops the moment you let go.
+  const freeHint = tool === "free" && cut && !isCleanFreehandCut(country.rings, cut);
 
   const clearTimers = () => {
     timers.current.forEach(clearTimeout);
@@ -58,8 +60,9 @@ export function RoundView({ country, tool = "line", label, allowRetry, nextLabel
   };
   useEffect(() => clearTimers, []);
 
-  const chop = () => {
-    if (!cut || !canChop) return;
+  const chop = (c: Cut | null = cut) => {
+    if (!c || !cutCrossesLand(country.rings, c)) return;
+    const cut = c;
     const shareA = splitShareCut(country.points, cut);
     const error = Math.abs(shareA * 100 - 50);
     const r: RoundResult = { iso: country.iso, cut, shareA, error, score: scoreFor(error), grade: gradeFor(error) };
@@ -80,6 +83,11 @@ export function RoundView({ country, tool = "line", label, allowRetry, nextLabel
       }, T.SCORE),
     );
   };
+
+  useEffect(() => {
+    if (tool === "free" && cut && !result && isCleanFreehandCut(country.rings, cut)) chop(cut);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cut, tool]);
 
   const retry = () => {
     clearTimers();
@@ -114,9 +122,7 @@ export function RoundView({ country, tool = "line", label, allowRetry, nextLabel
           {flagOf(country.iso2)} {country.name}
         </Text>
         <Text style={s.goal}>{METRIC_WORDS[country.metric ?? "population"].goal}</Text>
-        <Text style={s.note}>
-          {[country.note, country.placeholder ? "placeholder data" : country.source?.split(",")[0]].filter(Boolean).join(" · ")}
-        </Text>
+        <Text style={s.note}>{country.note ?? ""}</Text>
       </View>
 
       <View style={s.canvas}>
@@ -139,24 +145,24 @@ export function RoundView({ country, tool = "line", label, allowRetry, nextLabel
           <>
             <Text style={s.help}>
               {tool === "free"
-                ? cut
-                  ? canChop
-                    ? "Happy with it? Chop! Or draw again."
-                    : "Your cut has to cross the land."
-                  : "Draw any cut with your finger."
+                ? freeHint
+                  ? "Start and finish your cut off the land."
+                  : "Slice right through the land in one stroke."
                 : cut
                   ? canChop
                     ? "Drag the dots to adjust, then chop."
                     : "Your line has to cross the land."
                   : "Drag across the map to draw your line."}
             </Text>
-            <Pressable
-              onPress={chop}
-              disabled={!canChop}
-              style={({ pressed }) => [s.chopBtn, !canChop && s.btnDisabled, pressed && s.pressed]}
-            >
-              <Text style={s.chopText}>CHOP 🔪</Text>
-            </Pressable>
+            {tool === "line" && (
+              <Pressable
+                onPress={() => chop()}
+                disabled={!canChop}
+                style={({ pressed }) => [s.chopBtn, !canChop && s.btnDisabled, pressed && s.pressed]}
+              >
+                <Text style={s.chopText}>CHOP 🔪</Text>
+              </Pressable>
+            )}
           </>
         ) : (
           <Animated.View entering={FadeIn.delay(T.COUNT_START - 150).duration(250)} style={s.resultBox}>

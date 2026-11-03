@@ -47,12 +47,16 @@ GHSL_3SS_NAME = "GHS_POP_E2025_GLOBE_R2023A_4326_3ss_V1_0_R{r}_C{c}"
 GDP = RAW / "gdp" / "rast_gdpTot_1990_2024_30arcsec.tif"
 BILLIONAIRES = RAW / "wikidata" / "billionaire_cities.json"
 CONFIG = ROOT / "pipeline" / "config" / "packs.json"
+ALL_COUNTRIES = ROOT / "pipeline" / "config" / "countries_all.json"  # make_config.py
 DATA = ROOT / "mobile" / "src" / "data"
 PACKS = DATA / "packs"
 REPORT = ROOT / "pipeline" / "reports" / "validation.json"  # committed: accuracy of every pack
 
-TARGET_POINTS = {"countries": 6000, "islands": 5000, "world": 10000, "economy": 6000}
-SIMPLIFY = {"countries": 0.0008, "islands": 0.0006, "world": 0.0012, "economy": 0.0008, "billionaires": 0.0008}
+TARGET_POINTS = {"countries": 4000, "islands": 5000, "world": 10000, "economy": 5000}
+SMALL_KM2 = 20_000   # below this, use 1:10m borders
+TINY_KM2 = 3_000     # below this, use 100 m population tiles
+QUANT = 65535        # coordinates ship as integers 0..QUANT (normalised space is 0..1)
+SIMPLIFY = {"countries": 0.0009, "islands": 0.0006, "world": 0.0012, "economy": 0.0008, "billionaires": 0.0008}
 VALIDATION_LINES = 300
 MAX_ERROR_PP = 0.3  # compressed vs full resolution, worst case over the random cuts
 
@@ -121,6 +125,8 @@ def playable_lonlat(feature: dict, keep: list | None) -> tuple[MultiPolygon, boo
         polys = [p for p in polys if any(b[0] <= centre(p[0])[0] <= b[1] and b[2] <= centre(p[0])[1] <= b[3] for b in keep)]
     lons = np.concatenate([np.asarray(p[0])[:, 0] for p in polys])
     wraps = lons.max() - lons.min() > 180
+    if not keep and len(polys) > 1:
+        polys = drop_remote_specks(polys, wraps)
     out = []
     for p in polys:
         rings = []
@@ -131,6 +137,43 @@ def playable_lonlat(feature: dict, keep: list | None) -> tuple[MultiPolygon, boo
             rings.append(a)
         out.append(Polygon(rings[0], rings[1:]))
     return MultiPolygon(out), wraps
+
+
+def drop_remote_specks(polys: list, wraps: bool) -> list:
+    """Drop far-away small islands (e.g. Galápagos, Canaries, Andamans) so the main country fills
+    the screen: a polygon goes if it is > 900 km from the largest one AND < 5% of the land area."""
+    def lonlat(p):
+        a = np.asarray(p[0], dtype=np.float64)
+        if wraps:
+            a[:, 0] = np.where(a[:, 0] < 0, a[:, 0] + 360, a[:, 0])
+        return a
+
+    arrs = [lonlat(p) for p in polys]
+    areas = []
+    for a in arrs:
+        lat0 = a[:, 1].mean() * DEG
+        x, y = a[:, 0] * DEG * math.cos(lat0) * 6371, a[:, 1] * DEG * 6371
+        areas.append(abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1))) / 2)
+    total = sum(areas)
+    big = int(np.argmax(areas))
+    c0 = arrs[big].mean(axis=0)
+
+    def dist_km(c):
+        dlat, dlon = (c[1] - c0[1]) * DEG, (c[0] - c0[0]) * DEG
+        h = math.sin(dlat / 2) ** 2 + math.cos(c0[1] * DEG) * math.cos(c[1] * DEG) * math.sin(dlon / 2) ** 2
+        return 2 * 6371 * math.asin(math.sqrt(min(1, h)))
+
+    return [p for p, a, ar in zip(polys, arrs, areas) if not (dist_km(a.mean(axis=0)) > 900 and ar < 0.05 * total)]
+
+
+def land_km2(mp: MultiPolygon) -> float:
+    minx, miny, maxx, maxy = mp.bounds
+    proj = laea((minx + maxx) / 2, (miny + maxy) / 2)
+    total = 0.0
+    for poly in mp.geoms:
+        x, y = proj(*np.asarray(poly.exterior.coords).T)
+        total += Polygon(np.column_stack([x, y])).area
+    return total * 6371 ** 2
 
 
 class Normaliser:
@@ -147,7 +190,7 @@ class Normaliser:
 
 
 def project_geometry(mp: MultiPolygon, proj, tol: float, min_area: float):
-    """Project + normalise + simplify. Returns (normaliser, rings as flat lists)."""
+    """Project + normalise + simplify. Returns (normaliser, rings as flat lists, land centroid)."""
     projected = []
     for poly in mp.geoms:
         rings = [np.asarray(poly.exterior.coords)] + [np.asarray(i.coords) for i in poly.interiors]
@@ -156,6 +199,7 @@ def project_geometry(mp: MultiPolygon, proj, tol: float, min_area: float):
     ally = np.concatenate([p[0][:, 1] for p in projected])
     norm = Normaliser(allx, ally)
     rings_out = []
+    cx_sum = cy_sum = a_sum = 0.0
     for rings in projected:
         nr = [np.column_stack(norm(r[:, 0], r[:, 1])) for r in rings]
         poly = Polygon(nr[0], nr[1:])
@@ -163,6 +207,10 @@ def project_geometry(mp: MultiPolygon, proj, tol: float, min_area: float):
             poly = poly.buffer(0)
         if poly.area < min_area:
             continue
+        cen = poly.centroid
+        cx_sum += cen.x * poly.area
+        cy_sum += cen.y * poly.area
+        a_sum += poly.area
         simp = poly.simplify(tol, preserve_topology=True)
         for g in getattr(simp, "geoms", [simp]):
             if g.is_empty or g.area < min_area:
@@ -170,8 +218,8 @@ def project_geometry(mp: MultiPolygon, proj, tol: float, min_area: float):
             for ring in [g.exterior, *g.interiors]:
                 c = np.asarray(ring.coords)
                 if len(c) >= 4:
-                    rings_out.append([round(float(v), 5) for v in c.ravel()])
-    return norm, rings_out
+                    rings_out.append([int(round(float(v) * QUANT)) for v in c.ravel()])
+    return norm, rings_out, (cx_sum / a_sum, cy_sum / a_sum) if a_sum else (0.5, 0.5)
 
 
 # ---------------------------------------------------------------- raster sampling
@@ -292,6 +340,18 @@ def compress(x: np.ndarray, y: np.ndarray, w: np.ndarray, target: int):
     return cx
 
 
+def difficulty(cx, cy, cw, centre) -> float:
+    """Mean |share − 50%| (pp) of lines through the land's centroid at 12 angles. 0 = easy."""
+    tot = cw.sum()
+    errs = []
+    for k in range(12):
+        t = k * math.pi / 12
+        nx, ny = math.cos(t), math.sin(t)
+        c = nx * centre[0] + ny * centre[1]
+        errs.append(abs(cw[(nx * cx + ny * cy) > c].sum() / tot - 0.5) * 100)
+    return float(np.mean(errs))
+
+
 def validate(fx, fy, fw, cx, cy, cw, lines: int, seed: int) -> tuple[float, float]:
     """Max and mean |share difference| in percentage points over random cuts through populated places."""
     rng = np.random.default_rng(seed)
@@ -331,8 +391,10 @@ def cities_in(places: list, iso: str, mp: MultiPolygon, wraps: bool, proj, norm)
 def write_pack(pack: str, meta: dict, rings: list, x, y, w, cities: list, weight_round: int = 0) -> Path:
     pts = []
     for a, b, c in zip(x, y, w):
-        pts += [round(float(a), 5), round(float(b), 5), round(float(c), weight_round) if weight_round else int(round(float(c)))]
-    out = {**meta, "placeholder": False, "rings": rings, "points": pts, "cities": cities}
+        pts += [int(round(float(a) * QUANT)), int(round(float(b) * QUANT)), int(round(float(c)))]
+    for c in cities:
+        c["x"], c["y"] = int(round(c["x"] * QUANT)), int(round(c["y"] * QUANT))
+    out = {**meta, "placeholder": False, "q": QUANT, "rings": rings, "points": pts, "cities": cities}
     d = PACKS / pack
     d.mkdir(parents=True, exist_ok=True)
     path = d / f"{meta['iso']}.json"
@@ -343,11 +405,16 @@ def write_pack(pack: str, meta: dict, rings: list, x, y, w, cities: list, weight
 def build_country(pack: str, cfg: dict, features: dict, places: list, layer: str, report: dict) -> dict | None:
     iso = cfg["iso"]
     t0 = time.time()
-    feat = features[iso]
+    feat = features[iso] if iso in features else FEATURES_10M[iso]
     mp, wraps = playable_lonlat(feat, cfg.get("keep"))
+    km2 = land_km2(mp)
+    if km2 < SMALL_KM2 and features is not FEATURES_10M:  # small: use the detailed borders
+        feat = FEATURES_10M[iso]
+        mp, wraps = playable_lonlat(feat, cfg.get("keep"))
+        km2 = land_km2(mp)
     minx, miny, maxx, maxy = mp.bounds
     proj = laea((minx + maxx) / 2, (miny + maxy) / 2)
-    norm, rings = project_geometry(mp, proj, SIMPLIFY[pack], 2e-6)
+    norm, rings, centre = project_geometry(mp, proj, SIMPLIFY[pack], 2e-6)
     metric = {"pop": "population", "gdp": "gdp", "bil": "billionaires"}[layer]
 
     if layer == "bil":
@@ -370,27 +437,37 @@ def build_country(pack: str, cfg: dict, features: dict, places: list, layer: str
     else:
         if layer == "gdp":
             paths, band = [GDP], gdp_band()
-        elif pack == "islands":
+        elif pack == "islands" or km2 < TINY_KM2:
             paths, band = ghsl_3ss_tiles(mp), 1
         else:
             paths, band = [GHSL], 1
-        lon, lat, val = sample_cells(paths, band, mp, all_touched=(pack == "islands"))
+        lon, lat, val = sample_cells(paths, band, mp, all_touched=(pack == "islands" or km2 < TINY_KM2))
         if len(val) == 0:
             print(f"  {pack}/{iso}: no data, skipped")
             return None
-        fx, fy = norm(*proj(lon, lat))
-        # Very concentrated layers (e.g. Chile's GDP in Santiago) need more points: grow until it validates.
-        for target in (TARGET_POINTS[pack] * f for f in (1, 1.5, 2, 3)):
-            cx, cy, cw = compress(fx, fy, val, int(target))
-            # validate on the rounded coordinates that actually ship
-            err = validate(fx, fy, val, np.round(cx, 5), np.round(cy, 5), cw, VALIDATION_LINES, seed=len(iso) * 7919 + ord(iso[0]))
-            if err[0] <= MAX_ERROR_PP:
-                break
+        def fit_points(lon, lat, val):
+            fx, fy = norm(*proj(lon, lat))
+            # Concentrated layers (e.g. Chile's GDP in Santiago) need more points: grow until it validates.
+            for target in (TARGET_POINTS[pack] * f for f in (1, 1.5, 2)):
+                cx, cy, cw = compress(fx, fy, val, int(target))
+                # validate on the quantised coordinates that actually ship
+                err = validate(fx, fy, val, np.round(cx * QUANT) / QUANT, np.round(cy * QUANT) / QUANT, cw,
+                               VALIDATION_LINES, seed=len(iso) * 7919 + ord(iso[0]))
+                if err[0] <= MAX_ERROR_PP:
+                    break
+            return cx, cy, cw, err
+
+        cx, cy, cw, err = fit_points(lon, lat, val)
+        # Small, concentrated countries: 1 km cells are too lumpy. Retry once with the 100 m grid.
+        if err[0] > MAX_ERROR_PP and layer == "pop" and paths == [GHSL] and km2 < 150_000:
+            lon, lat, val = sample_cells(ghsl_3ss_tiles(mp), 1, mp, all_touched=True)
+            cx, cy, cw, err = fit_points(lon, lat, val)
         n_full = len(val)
 
     total = float(cw.sum())
     meta = {
         "iso": iso, "iso2": iso2_of(feat["properties"]), "name": cfg["name"], "pack": pack,
+        "continent": cfg.get("continent") or CONTINENT_OF.get(iso), "difficulty": round(difficulty(cx, cy, cw, centre), 2),
         "note": cfg.get("note"), "metric": metric, "total": round(total), "population": round(total) if metric == "population" else None,
         "source": SOURCES[metric], "width": round(norm.width, 5), "height": round(norm.height, 5),
     }
@@ -399,7 +476,7 @@ def build_country(pack: str, cfg: dict, features: dict, places: list, layer: str
     flag = "OK " if err[0] <= MAX_ERROR_PP else "!! "
     print(f"  {flag}{pack}/{iso}: {n_full:>9,} cells → {len(cw):>5} pts, max err {err[0]:.3f} pp, "
           f"total {total:,.0f}, {out.stat().st_size / 1024:.0f} KB, {time.time() - t0:.1f}s")
-    return {k: meta[k] for k in ("iso", "iso2", "name", "pack", "note", "metric", "total")}
+    return {k: meta[k] for k in INDEX_KEYS}
 
 
 _gdp_band = None
@@ -438,11 +515,11 @@ def build_world(features: dict, places: list, report: dict) -> dict:
         for p in polys_of(f["geometry"]):
             polys.append(Polygon(p[0], p[1:]))
     mp = MultiPolygon(polys)
-    norm, rings = project_geometry(mp, equal_earth, SIMPLIFY["world"], 4e-6)
+    norm, rings, centre = project_geometry(mp, equal_earth, SIMPLIFY["world"], 4e-6)
     lon, lat, val = world_cells(GHSL)
     fx, fy = norm(*equal_earth(lon, lat))
     cx, cy, cw = compress(fx, fy, val, TARGET_POINTS["world"])
-    err = validate(fx, fy, val, np.round(cx, 5), np.round(cy, 5), cw, VALIDATION_LINES, seed=42)
+    err = validate(fx, fy, val, np.round(cx * QUANT) / QUANT, np.round(cy * QUANT) / QUANT, cw, VALIDATION_LINES, seed=42)
     total = float(cw.sum())
     cities = []
     for f in places:
@@ -452,13 +529,17 @@ def build_world(features: dict, places: list, report: dict) -> dict:
             cities.append({"name": pr["name"], "pop": pr["pop_max"], "x": round(float(x), 4), "y": round(float(y), 4)})
     cities.sort(key=lambda c: -c["pop"])
     meta = {"iso": "WLD", "iso2": "", "name": "The World", "pack": "world", "note": "Every country except Antarctica",
+            "continent": None, "difficulty": round(difficulty(cx, cy, cw, centre), 2),
             "metric": "population", "total": round(total), "population": round(total), "source": SOURCES["population"],
             "width": round(norm.width, 5), "height": round(norm.height, 5)}
     out = write_pack("world", meta, rings, cx, cy, cw, cities[:10])
     report["world/WLD"] = {"cells": int(len(val)), "points": int(len(cw)), "max_err_pp": round(err[0], 3), "mean_err_pp": round(err[1], 4), "total": round(total)}
     print(f"  {'OK ' if err[0] <= MAX_ERROR_PP else '!! '}world/WLD: {len(val):,} cells → {len(cw)} pts, max err {err[0]:.3f} pp, "
           f"total {total:,.0f}, {out.stat().st_size / 1024:.0f} KB, {time.time() - t0:.1f}s")
-    return {k: meta[k] for k in ("iso", "iso2", "name", "pack", "note", "metric", "total")}
+    return {k: meta[k] for k in INDEX_KEYS}
+
+
+INDEX_KEYS = ("iso", "iso2", "name", "pack", "note", "metric", "total", "continent", "difficulty")
 
 
 def write_registry(index: list) -> None:
@@ -468,7 +549,12 @@ def write_registry(index: list) -> None:
         "",
         'export type PackId = "countries" | "islands" | "world" | "economy" | "billionaires";',
         'export type Metric = "population" | "gdp" | "billionaires";',
-        "export type PackEntry = { iso: string; iso2: string; name: string; pack: PackId; note: string | null; metric: Metric; total: number };",
+        "export type PackEntry = {",
+        "  iso: string; iso2: string; name: string; pack: PackId; note: string | null; metric: Metric; total: number;",
+        "  continent: string | null;",
+        "  /** Error (pp) of a naive cut through the middle of the land; higher = harder. */",
+        "  difficulty: number;",
+        "};",
         "",
         f"export const PACK_INDEX: PackEntry[] = {json.dumps(index, indent=2)};",
         "",
@@ -482,20 +568,28 @@ def write_registry(index: list) -> None:
     print(f"registry.ts: {len(index)} packs")
 
 
+FEATURES_10M: dict = {}
+CONTINENT_OF: dict = {}
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--only", help="comma-separated ISO codes (registry is still rebuilt from all packs on disk)")
     args = ap.parse_args()
     only = set(args.only.split(",")) if args.only else None
 
+    global FEATURES_10M, CONTINENT_OF
     cfg = json.loads(CONFIG.read_text(encoding="utf-8"))
     f50 = load_features("ne_50m_admin_0_countries.geojson")
     f10 = load_features("ne_10m_admin_0_countries.geojson")
+    FEATURES_10M = f10
+    all_countries = json.loads(ALL_COUNTRIES.read_text(encoding="utf-8"))
+    CONTINENT_OF = {c["iso"]: c["continent"] for c in all_countries}
     places = json.loads((NE / "ne_10m_populated_places_simple.geojson").read_text(encoding="utf-8"))["features"]
     report = json.loads(REPORT.read_text(encoding="utf-8")) if REPORT.exists() else {}
     by_iso = {c["iso"]: c for c in cfg["countries"]}
 
-    jobs = [("countries", c, f50, "pop") for c in cfg["countries"]]
+    jobs = [("countries", c, f50, "pop") for c in all_countries]
     jobs += [("islands", c, f10, "pop") for c in cfg["islands"]]
     if gdp_available():
         jobs += [("economy", by_iso[i], f50, "gdp") for i in cfg["economy"]]
@@ -521,7 +615,7 @@ def main() -> None:
         m = json.loads(path.read_text(encoding="utf-8"))
         if m.get("placeholder", True):
             continue  # old prototype packs are not listed
-        index.append({k: m.get(k) for k in ("iso", "iso2", "name", "pack", "note", "metric", "total")})
+        index.append({k: m.get(k) for k in INDEX_KEYS})
     write_registry(index)
 
 

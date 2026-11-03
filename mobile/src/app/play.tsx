@@ -5,22 +5,26 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { playSfx } from "@/audio/sfx";
 import { entryFor, flagOf, loadPack, packKey, type PackId } from "@/data/packs";
+import { batchesFor } from "@/game/batches";
 import { dailyCountries, puzzleNumber, ROUNDS_PER_DAY } from "@/game/daily";
 import { gradeFor } from "@/game/scoring";
-import { getDaily, saveBest, saveDailyRound, type RoundRecord } from "@/store/progress";
+import { getDaily, saveBatchBest, saveBest, saveDailyRound, type RoundRecord } from "@/store/progress";
 import type { Tool } from "@/render/ChopCanvas";
-import { RoundView } from "@/ui/RoundView";
+import { RoundView, type RoundResult } from "@/ui/RoundView";
 import { useTheme, type Theme } from "@/ui/theme";
 
-/** /play?mode=daily  or  /play?mode=single&pack=countries&iso=JPN[&tool=free] */
+/**
+ * /play?mode=daily
+ * /play?mode=batch&pack=countries&continent=Europe&n=2[&tool=free]
+ * /play?mode=single&pack=world&iso=WLD[&tool=free]
+ */
 export default function Play() {
-  const { mode = "single", iso = "JPN", pack = "countries", tool = "line" } = useLocalSearchParams<{
-    mode?: string;
-    iso?: string;
-    pack?: PackId;
-    tool?: Tool;
-  }>();
-  return mode === "daily" ? <Daily /> : <Single iso={iso} pack={pack} tool={tool} />;
+  const p = useLocalSearchParams<{ mode?: string; iso?: string; pack?: PackId; tool?: Tool; continent?: string; n?: string }>();
+  const pack = p.pack ?? "countries";
+  const tool = p.tool ?? "line";
+  if (p.mode === "daily") return <Daily />;
+  if (p.mode === "batch") return <BatchRun key={`${pack}-${p.continent}-${p.n}-${tool}`} pack={pack} continent={p.continent ?? ""} n={Number(p.n ?? 1)} tool={tool} />;
+  return <Single iso={p.iso ?? "WLD"} pack={pack} tool={tool} />;
 }
 
 const PACK_LABEL: Record<PackId, string> = {
@@ -31,20 +35,81 @@ const PACK_LABEL: Record<PackId, string> = {
   billionaires: "Billionaires",
 };
 
+const toRecord = (r: RoundResult): RoundRecord => ({ iso: r.iso, shareA: r.shareA, error: r.error, score: r.score, cut: r.cut });
+
 function Single({ iso, pack, tool }: { iso: string; pack: PackId; tool: Tool }) {
   const country = useMemo(() => loadPack(iso, pack), [iso, pack]);
   const where = PACK_LABEL[pack];
-  const label = tool === "free" ? `Freehand · ${where}` : pack === "world" ? where : `${where} · practice`;
   return (
     <RoundView
       country={country}
       tool={tool}
-      label={label}
+      label={tool === "free" ? `Freehand · ${where}` : where}
       allowRetry
       nextLabel="Done ✓"
       onBack={() => router.back()}
       onChopped={(r) => saveBest(packKey(pack, r.iso), r.score, tool)}
       onNext={() => router.back()}
+    />
+  );
+}
+
+/** A pack of 4: one chop per country, total out of 400. */
+function BatchRun({ pack, continent, n, tool }: { pack: PackId; continent: string; n: number; tool: Tool }) {
+  const batches = useMemo(() => batchesFor(pack, continent || undefined), [pack, continent]);
+  const batch = batches[n - 1];
+  const [round, setRound] = useState(0);
+  const [records, setRecords] = useState<RoundRecord[]>([]);
+  if (!batch) return null;
+  const count = batch.entries.length;
+  const where = continent || PACK_LABEL[pack];
+
+  if (round >= count) {
+    const next = batches[n];
+    return (
+      <Summary
+        kicker={`${tool === "free" ? "FREEHAND · " : ""}${where.toUpperCase()} · ${batch.title.toUpperCase()}`}
+        records={records}
+        pack={pack}
+        primary={
+          next
+            ? {
+                label: `${next.title} →`,
+                onPress: () =>
+                  router.replace(`/play?mode=batch&pack=${pack}&continent=${encodeURIComponent(continent)}&n=${n + 1}&tool=${tool}` as never),
+              }
+            : { label: "Back to packs", onPress: () => router.back() }
+        }
+        secondary={{
+          label: "Play again",
+          onPress: () => {
+            setRecords([]);
+            setRound(0);
+          },
+        }}
+      />
+    );
+  }
+
+  const entry = batch.entries[round];
+  return (
+    <RoundView
+      key={`${batch.id}-${round}`}
+      country={loadPack(entry.iso, pack)}
+      tool={tool}
+      label={`${where} · ${batch.title} · ${round + 1}/${count}`}
+      allowRetry={false}
+      nextLabel={round < count - 1 ? "Next country →" : "See results →"}
+      onBack={() => router.back()}
+      onChopped={(r) => {
+        saveBest(packKey(pack, r.iso), r.score, tool);
+        setRecords((rs) => {
+          const all = [...rs, toRecord(r)];
+          if (all.length === count) saveBatchBest(batch.id, all.reduce((s, x) => s + x.score, 0), tool);
+          return all;
+        });
+      }}
+      onNext={() => setRound((x) => x + 1)}
     />
   );
 }
@@ -59,24 +124,33 @@ function Daily() {
     return filled >= ROUNDS_PER_DAY ? ROUNDS_PER_DAY : firstOpen === -1 ? records.length : firstOpen;
   });
 
-  if (round >= ROUNDS_PER_DAY) return <DailySummary no={no} records={records} />;
+  if (round >= ROUNDS_PER_DAY) {
+    return (
+      <Summary
+        kicker={`DAILY CHOP #${no}`}
+        records={records}
+        pack="countries"
+        primary={{ label: "Share result", onPress: () => Share.share({ message: shareText(no, records) }) }}
+        secondary={{ label: "Back to menu", onPress: () => router.back() }}
+        foot="New puzzle at midnight."
+      />
+    );
+  }
 
-  const country = loadPack(isos[round]);
   return (
     <RoundView
       key={`daily-${no}-${round}`}
-      country={country}
+      country={loadPack(isos[round])}
       label={`Daily #${no} · Round ${round + 1} / ${ROUNDS_PER_DAY}`}
       allowRetry={false}
       nextLabel={round < ROUNDS_PER_DAY - 1 ? "Next round →" : "See results →"}
       onBack={() => router.back()}
       onChopped={(r) => {
-        const rec: RoundRecord = { iso: r.iso, shareA: r.shareA, error: r.error, score: r.score, cut: r.cut };
-        saveDailyRound(no, round, rec, ROUNDS_PER_DAY);
+        saveDailyRound(no, round, toRecord(r), ROUNDS_PER_DAY);
         saveBest(packKey("countries", r.iso), r.score);
         setRecords(getDaily(no));
       }}
-      onNext={() => setRound((n) => n + 1)}
+      onNext={() => setRound((x) => x + 1)}
     />
   );
 }
@@ -91,7 +165,23 @@ function shareText(no: number, records: RoundRecord[]): string {
   return [`GEO CHOP #${no} 🔪 ${total.toFixed(1)}/${ROUNDS_PER_DAY * 100}`, ...rows].join("\n");
 }
 
-function DailySummary({ no, records }: { no: number; records: RoundRecord[] }) {
+type Action = { label: string; onPress: () => void };
+
+function Summary({
+  kicker,
+  records,
+  pack,
+  primary,
+  secondary,
+  foot,
+}: {
+  kicker: string;
+  records: RoundRecord[];
+  pack: PackId;
+  primary: Action;
+  secondary: Action;
+  foot?: string;
+}) {
   const theme = useTheme();
   const s = makeStyles(theme);
   const total = records.reduce((sum, r) => sum + r.score, 0);
@@ -99,14 +189,14 @@ function DailySummary({ no, records }: { no: number; records: RoundRecord[] }) {
   return (
     <SafeAreaView style={s.screen} edges={["top", "bottom"]}>
       <ScrollView contentContainerStyle={s.content}>
-        <Text style={s.kicker}>DAILY CHOP #{no}</Text>
+        <Text style={s.kicker}>{kicker}</Text>
         <Text style={s.total}>
           {total.toFixed(1)}
-          <Text style={s.totalOf}> / {ROUNDS_PER_DAY * 100}</Text>
+          <Text style={s.totalOf}> / {records.length * 100}</Text>
         </Text>
         <View style={s.rows}>
           {records.map((r, i) => {
-            const e = entryFor(r.iso);
+            const e = entryFor(r.iso, pack);
             const g = gradeFor(r.error);
             return (
               <View key={i} style={s.row}>
@@ -125,22 +215,22 @@ function DailySummary({ no, records }: { no: number; records: RoundRecord[] }) {
         <Pressable
           onPress={() => {
             playSfx("tap");
-            Share.share({ message: shareText(no, records) });
+            primary.onPress();
           }}
           style={({ pressed }) => [s.primary, pressed && s.pressed]}
         >
-          <Text style={s.primaryText}>Share result</Text>
+          <Text style={s.primaryText}>{primary.label}</Text>
         </Pressable>
         <Pressable
           onPress={() => {
             playSfx("tap");
-            router.back();
+            secondary.onPress();
           }}
           style={({ pressed }) => [s.ghost, pressed && s.pressed]}
         >
-          <Text style={s.ghostText}>Back to menu</Text>
+          <Text style={s.ghostText}>{secondary.label}</Text>
         </Pressable>
-        <Text style={s.foot}>New puzzle at midnight.</Text>
+        {foot ? <Text style={s.foot}>{foot}</Text> : null}
       </ScrollView>
     </SafeAreaView>
   );

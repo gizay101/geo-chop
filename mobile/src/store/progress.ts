@@ -53,6 +53,18 @@ export function getBest(id: string, tool = "line"): number | null {
   return readJson<number | null>(bestKey(id, tool), null);
 }
 
+// ---- best total per pack of 4 ----
+const batchKey = (id: string, tool: string) => `batch:${tool}:${id}`;
+
+export function getBatchBest(id: string, tool = "line"): number | null {
+  return readJson<number | null>(batchKey(id, tool), null);
+}
+
+export function saveBatchBest(id: string, total: number, tool = "line") {
+  const prev = getBatchBest(id, tool);
+  if (prev === null || total > prev) writeJson(batchKey(id, tool), total);
+}
+
 export function saveBest(id: string, score: number, tool = "line") {
   const prev = getBest(id, tool);
   if (prev === null || score > prev) writeJson(bestKey(id, tool), score);

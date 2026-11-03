@@ -30,7 +30,10 @@ function mulberry32(seed: number) {
 
 /** The same 5 countries for everyone on a given puzzle number. */
 export function dailyCountries(no: number): string[] {
-  const pool = entriesFor("countries").map((e) => e.iso);
+  // Microstates and atolls are fun in packs but too fiddly for the shared daily.
+  const pool = entriesFor("countries")
+    .filter((e) => e.total >= 2_000_000)
+    .map((e) => e.iso);
   const rand = mulberry32(mix(no + 0x9e3779b9));
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));

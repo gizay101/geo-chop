@@ -250,3 +250,22 @@ export function perfectCut(points: readonly number[], cut: Cut, target = 0.5): C
   const shift = (lo + hi) / 2;
   return { kind: "curve", pts: p.map((q) => ({ x: q.x + n.x * shift, y: q.y + n.y * shift })) };
 }
+
+/** Is a point on land? (even–odd over all rings, so lakes/holes count as water) */
+export function pointOnLand(rings: readonly number[][], x: number, y: number): boolean {
+  let inside = false;
+  for (const r of rings) {
+    for (let i = 0, j = r.length - 2; i < r.length; j = i, i += 2) {
+      const xi = r[i], yi = r[i + 1], xj = r[j], yj = r[j + 1];
+      if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+    }
+  }
+  return inside;
+}
+
+/** A freehand cut is "clean" when it starts and ends off the land and actually crosses it. */
+export function isCleanFreehandCut(rings: readonly number[][], cut: Cut): boolean {
+  if (cut.kind !== "curve" || cut.pts.length < 2) return false;
+  const s = cut.pts[0], e = cut.pts[cut.pts.length - 1];
+  return !pointOnLand(rings, s.x, s.y) && !pointOnLand(rings, e.x, e.y) && cutCrossesLand(rings, cut);
+}
