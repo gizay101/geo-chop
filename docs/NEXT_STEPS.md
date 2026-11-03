@@ -119,5 +119,5 @@ src/data/registry.ts     Generated: lazy loaders for every pack
 
 ## 6. Decisions needed from you
 1. **Friends leaderboard:** approve **B (Supabase Friend Leagues)** for launch, with Game Center later?
-2. **Apple Developer account ($99/yr):** needed for TestFlight, Sign in with Apple, push and the App Store. When will you enrol? Use **Organization** enrolment if you'll publish under a company name (needs a D-U-N-S number).
-3. **Domain:** register `geochop.app` (or similar) for invite links and the privacy policy.
+2. ~~Apple Developer account~~: applied, awaiting approval (2026-11-03).
+3. **Domain: not needed yet.** Use free hosting (GitHub Pages or Cloudflare Pages) for the privacy policy, support page and invite links. Universal links work on any HTTPS host where we control `/.well-known/apple-app-site-association`. A custom domain is optional polish before launch. Switching domains later requires an app update, and old invite links stop working.
