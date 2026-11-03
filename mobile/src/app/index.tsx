@@ -40,7 +40,6 @@ export default function MainMenu() {
     { emoji: "🏝️", title: "Islands", subtitle: `${entriesFor("islands").length} small islands`, href: "/batches?pack=islands" },
     { emoji: "🌍", title: "The World", subtitle: "Split humanity in half", href: "/play?mode=single&pack=world&iso=WLD" },
     { emoji: "🏆", title: "Friends League", subtitle: "Private leaderboards", soon: "Invite friends with a link and compete on the daily. Coming soon." },
-    { emoji: "✍️", title: "Freehand", subtitle: "Cut with any curve", href: "/continents?tool=free" },
     { emoji: "💰", title: "Economy", subtitle: `Split the GDP · ${entriesFor("economy").length}`, href: "/batches?pack=economy" },
     { emoji: "💎", title: "Billionaires", subtitle: "Where the money lives", href: "/play?mode=single&pack=billionaires&iso=USA" },
   ];

@@ -25,7 +25,7 @@ export type RoundResult = {
 
 type Props = {
   country: CountryPack;
-  /** Straight line (default) or freehand curve. */
+  /** Freehand (default; the only tool in the game) or the old straight line. */
   tool?: Tool;
   /** e.g. "Daily #12 · Round 2 / 5". */
   label: string;
@@ -39,7 +39,7 @@ type Props = {
 };
 
 /** One round: aim, chop, 3D reveal, score. */
-export function RoundView({ country, tool = "line", label, allowRetry, nextLabel, onBack, onChopped, onNext }: Props) {
+export function RoundView({ country, tool = "free", label, allowRetry, nextLabel, onBack, onChopped, onNext }: Props) {
   const theme = useTheme();
   const [cut, setCut] = useState<Cut | null>(null);
   const [result, setResult] = useState<RoundResult | null>(null);

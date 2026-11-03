@@ -15,13 +15,13 @@ import { useTheme, type Theme } from "@/ui/theme";
 
 /**
  * /play?mode=daily
- * /play?mode=batch&pack=countries&continent=Europe&n=2[&tool=free]
- * /play?mode=single&pack=world&iso=WLD[&tool=free]
+ * /play?mode=batch&pack=countries&continent=Europe&n=2
+ * /play?mode=single&pack=world&iso=WLD
  */
 export default function Play() {
-  const p = useLocalSearchParams<{ mode?: string; iso?: string; pack?: PackId; tool?: Tool; continent?: string; n?: string }>();
+  const p = useLocalSearchParams<{ mode?: string; iso?: string; pack?: PackId; continent?: string; n?: string }>();
   const pack = p.pack ?? "countries";
-  const tool = p.tool ?? "line";
+  const tool: Tool = "free";
   if (p.mode === "daily") return <Daily />;
   if (p.mode === "batch") return <BatchRun key={`${pack}-${p.continent}-${p.n}-${tool}`} pack={pack} continent={p.continent ?? ""} n={Number(p.n ?? 1)} tool={tool} />;
   return <Single iso={p.iso ?? "WLD"} pack={pack} tool={tool} />;
@@ -44,7 +44,7 @@ function Single({ iso, pack, tool }: { iso: string; pack: PackId; tool: Tool }) 
     <RoundView
       country={country}
       tool={tool}
-      label={tool === "free" ? `Freehand · ${where}` : where}
+      label={where}
       allowRetry
       nextLabel="Done ✓"
       onBack={() => router.back()}
@@ -68,7 +68,7 @@ function BatchRun({ pack, continent, n, tool }: { pack: PackId; continent: strin
     const next = batches[n];
     return (
       <Summary
-        kicker={`${tool === "free" ? "FREEHAND · " : ""}${where.toUpperCase()} · ${batch.title.toUpperCase()}`}
+        kicker={`${where.toUpperCase()} · ${batch.title.toUpperCase()}`}
         records={records}
         pack={pack}
         primary={
@@ -76,7 +76,7 @@ function BatchRun({ pack, continent, n, tool }: { pack: PackId; continent: strin
             ? {
                 label: `${next.title} →`,
                 onPress: () =>
-                  router.replace(`/play?mode=batch&pack=${pack}&continent=${encodeURIComponent(continent)}&n=${n + 1}&tool=${tool}` as never),
+                  router.replace(`/play?mode=batch&pack=${pack}&continent=${encodeURIComponent(continent)}&n=${n + 1}` as never),
               }
             : { label: "Back to packs", onPress: () => router.back() }
         }

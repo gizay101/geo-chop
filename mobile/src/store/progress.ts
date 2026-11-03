@@ -49,23 +49,23 @@ export function getStreak(today: number): { current: number; best: number; playe
 // ---- best score per pack ("countries/JPN", "economy/JPN", ...), separately for freehand ----
 const bestKey = (id: string, tool: string) => (tool === "free" ? `best:free:${id}` : `best:${id}`);
 
-export function getBest(id: string, tool = "line"): number | null {
+export function getBest(id: string, tool = "free"): number | null {
   return readJson<number | null>(bestKey(id, tool), null);
 }
 
 // ---- best total per pack of 4 ----
 const batchKey = (id: string, tool: string) => `batch:${tool}:${id}`;
 
-export function getBatchBest(id: string, tool = "line"): number | null {
+export function getBatchBest(id: string, tool = "free"): number | null {
   return readJson<number | null>(batchKey(id, tool), null);
 }
 
-export function saveBatchBest(id: string, total: number, tool = "line") {
+export function saveBatchBest(id: string, total: number, tool = "free") {
   const prev = getBatchBest(id, tool);
   if (prev === null || total > prev) writeJson(batchKey(id, tool), total);
 }
 
-export function saveBest(id: string, score: number, tool = "line") {
+export function saveBest(id: string, score: number, tool = "free") {
   const prev = getBest(id, tool);
   if (prev === null || score > prev) writeJson(bestKey(id, tool), score);
 }

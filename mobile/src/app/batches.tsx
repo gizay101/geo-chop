@@ -16,26 +16,22 @@ const TITLES: Record<string, string> = { countries: "Countries", islands: "Islan
 export default function Batches() {
   const t = useTheme();
   const s = makeStyles(t);
-  const { pack = "countries", continent = "", tool = "line" } = useLocalSearchParams<{
-    pack?: PackId;
-    continent?: string;
-    tool?: string;
-  }>();
+  const { pack = "countries", continent = "" } = useLocalSearchParams<{ pack?: PackId; continent?: string }>();
   const batches = batchesFor(pack, continent || undefined);
   const [best, setBest] = useState<Record<string, number | null>>({});
 
   useFocusEffect(
     useCallback(() => {
-      setBest(Object.fromEntries(batches.map((b) => [b.id, getBatchBest(b.id, tool)])));
+      setBest(Object.fromEntries(batches.map((b) => [b.id, getBatchBest(b.id)])));
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pack, continent, tool]),
+    }, [pack, continent]),
   );
 
   const levelColor: Record<string, string> = { Easy: t.sideB, Medium: t.gold, Hard: t.sideA, Expert: "#E5484D" };
 
   return (
     <SafeAreaView style={s.screen} edges={["top", "bottom"]}>
-      <ScreenHeader title={`${tool === "free" ? "✍️ " : ""}${continent || TITLES[pack] || pack}`} />
+      <ScreenHeader title={continent || TITLES[pack] || pack} />
       <FlatList
         data={batches}
         keyExtractor={(b) => b.id}
@@ -47,7 +43,7 @@ export default function Batches() {
               onPress={() => {
                 playSfx("tap");
                 router.push(
-                  `/play?mode=batch&pack=${pack}&continent=${encodeURIComponent(continent)}&n=${item.index + 1}&tool=${tool}` as never,
+                  `/play?mode=batch&pack=${pack}&continent=${encodeURIComponent(continent)}&n=${item.index + 1}` as never,
                 );
               }}
               style={({ pressed }) => [s.card, pressed && s.pressed]}

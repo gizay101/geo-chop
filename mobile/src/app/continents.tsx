@@ -14,7 +14,7 @@ import { useTheme, type Theme } from "@/ui/theme";
 export default function Continents() {
   const t = useTheme();
   const s = makeStyles(t);
-  const { pack = "countries", tool = "line" } = useLocalSearchParams<{ pack?: PackId; tool?: string }>();
+  const { pack = "countries" } = useLocalSearchParams<{ pack?: PackId }>();
   const continents = continentsFor(pack);
   const [done, setDone] = useState<Record<string, number>>({});
 
@@ -22,16 +22,16 @@ export default function Continents() {
     useCallback(() => {
       setDone(
         Object.fromEntries(
-          continents.map((c) => [c.name, batchesFor(pack, c.name).filter((b) => getBatchBest(b.id, tool) !== null).length]),
+          continents.map((c) => [c.name, batchesFor(pack, c.name).filter((b) => getBatchBest(b.id) !== null).length]),
         ),
       );
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pack, tool]),
+    }, [pack]),
   );
 
   return (
     <SafeAreaView style={s.screen} edges={["top", "bottom"]}>
-      <ScreenHeader title={tool === "free" ? "Freehand" : "Countries"} back="‹ Menu" />
+      <ScreenHeader title="Countries" back="‹ Menu" />
       <ScrollView contentContainerStyle={s.list}>
         {continents.map((c) => {
           const packs = batchesFor(pack, c.name).length;
@@ -40,7 +40,7 @@ export default function Continents() {
               key={c.name}
               onPress={() => {
                 playSfx("tap");
-                router.push(`/batches?pack=${pack}&continent=${encodeURIComponent(c.name)}&tool=${tool}` as never);
+                router.push(`/batches?pack=${pack}&continent=${encodeURIComponent(c.name)}` as never);
               }}
               style={({ pressed }) => [s.card, pressed && s.pressed]}
             >
