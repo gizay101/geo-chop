@@ -11,6 +11,7 @@ import { gradeFor, scoreFor, type Grade } from "@/game/scoring";
 import { FIREWORKS_MAX_ERROR, T } from "@/game/timeline";
 import type { CountryPack } from "@/game/types";
 import { ChopCanvas, type Tool } from "@/render/ChopCanvas";
+import { saveLastChop } from "@/store/progress";
 import { CountUp } from "@/ui/CountUp";
 import { useTheme, type Theme } from "@/ui/theme";
 
@@ -69,6 +70,7 @@ export function RoundView({ country, tool = "free", label, allowRetry, nextLabel
     playSfx("slice");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setResult(r);
+    saveLastChop({ iso: country.iso, pack: country.pack, name: country.name, shareA, score: r.score });
     onChopped?.(r);
     timers.current.push(
       setTimeout(() => playSfx("countup"), T.COUNT_START),

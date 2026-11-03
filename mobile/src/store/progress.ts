@@ -53,6 +53,17 @@ export function getBest(id: string, tool = "free"): number | null {
   return readJson<number | null>(bestKey(id, tool), null);
 }
 
+// ---- the most recent chop, shown on the menu ----
+export type LastChop = { iso: string; pack: string; name: string; shareA: number; score: number };
+
+export function getLastChop(): LastChop | null {
+  return readJson<LastChop | null>("lastChop", null);
+}
+
+export function saveLastChop(c: LastChop) {
+  writeJson("lastChop", c);
+}
+
 // ---- best total per pack of 4 ----
 const batchKey = (id: string, tool: string) => `batch:${tool}:${id}`;
 

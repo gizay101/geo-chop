@@ -27,7 +27,8 @@
       "expo-router",
       "expo-audio",
       "expo-sqlite",
-      "expo-asset"
+      "expo-asset",
+      "expo-font"
     ],
     "scheme": "geochop",
     "experiments": {
