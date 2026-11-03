@@ -158,6 +158,16 @@ def make_success() -> np.ndarray:
     return buf
 
 
+def make_error() -> np.ndarray:
+    """Two short, low, buzzy tones: "nope"."""
+    buf = np.zeros(int(SR * 0.32))
+    for at, f in ((0.0, 220), (0.14, 165)):
+        t = t_axis(0.11)
+        tone = np.sign(np.sin(2 * np.pi * f * t)) * 0.5 + np.sin(2 * np.pi * f * t) * 0.5  # soft square
+        place(buf, one_pole_lowpass(tone, 2200) * env(t, 0.003, 0.05), at, 1.0)
+    return buf
+
+
 if __name__ == "__main__":
     write("tap", make_tap(), 0.5)
     write("slice", make_slice())
@@ -165,3 +175,4 @@ if __name__ == "__main__":
     write("countup", make_countup(), 0.7)
     write("fireworks", make_fireworks(), 0.8)
     write("success", make_success(), 0.7)
+    write("error", make_error(), 0.6)

@@ -8,6 +8,7 @@ const SOURCES = {
   countup: require("../../assets/sfx/countup.wav"),
   fireworks: require("../../assets/sfx/fireworks.wav"),
   success: require("../../assets/sfx/success.wav"),
+  error: require("../../assets/sfx/error.wav"),
 } as const;
 
 export type Sfx = keyof typeof SOURCES;
@@ -19,6 +20,7 @@ const VOLUME: Record<Sfx, number> = {
   countup: 0.7,
   fireworks: 0.8,
   success: 0.7,
+  error: 0.7,
 };
 
 let players: Partial<Record<Sfx, AudioPlayer>> | null = null;

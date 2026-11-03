@@ -12,6 +12,8 @@ import {
   Path,
   PathOp,
   Picture,
+  Rect,
+  RoundedRect,
   Skia,
   type SkPath,
 } from "@shopify/react-native-skia";
@@ -32,7 +34,7 @@ import Animated, {
 import * as Haptics from "expo-haptics";
 
 import { playSfx } from "@/audio/sfx";
-import { cutNormal, cutPolygon, extendedCurve, type Cut } from "@/game/geometry";
+import { cutNormal, cutPolygon, extendedCurve, isCleanFreehandCut, type Cut } from "@/game/geometry";
 import { T } from "@/game/timeline";
 import type { CountryPack, Pt } from "@/game/types";
 import { CountUp } from "@/ui/CountUp";
@@ -63,6 +65,9 @@ const GRID_EXTENT = 2400;
 /** Freehand: minimum spacing between recorded stroke points (px) and maximum points kept. */
 const STROKE_STEP = 5;
 const STROKE_MAX = 400;
+/** Ink per cut: this many times the country's on-screen diagonal, plus room to start/end off the land. */
+const INK_PER_DIAGONAL = 1.5;
+const INK_MARGIN = 80;
 
 export type Tool = "line" | "free";
 
@@ -142,6 +147,10 @@ export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, cel
 
   // ---------------- aiming: freehand stroke ----------------
   const stroke = useRef<Pt[]>([]);
+  const nope = useSharedValue(0);
+  const strokeLen = useRef(0);
+  const inkLeft = useSharedValue(1);
+  const inkBudget = INK_PER_DIAGONAL * Math.hypot(country.width, country.height) * fit.s + INK_MARGIN;
   const strokePath = useSharedValue<SkPath>(Skia.Path.Make());
   const strokeExt = useSharedValue<SkPath>(Skia.Path.Make());
 
@@ -337,6 +346,27 @@ export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, cel
   }, [snx, sny]);
   const bIsBack = useDerivedValue(() => 1 - aIsBack.value);
 
+  /** Wrong move: a quick red blink, a buzz and a warning haptic. */
+  const signalNope = () => {
+    nope.value = withSequence(withTiming(1, { duration: 60 }), withTiming(0, { duration: 380 }));
+    playSfx("error");
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+  };
+
+  const finishStroke = () => {
+    const pts = stroke.current;
+    if (pts.length < 3 || strokeLen.current < MIN_LINE * 1.5) {
+      clearAim();
+      onCutChange(null);
+      return;
+    }
+    const cut: Cut = { kind: "curve", pts: pts.map(toNorm) };
+    // Out of ink but still a clean cut? Then it simply chops. Otherwise: nope.
+    if (!isCleanFreehandCut(country.rings, cut)) signalNope();
+    setStroke(pts, true);
+    onCutChange(cut);
+  };
+
   // ---------------- gestures ----------------
   const pan = Gesture.Pan()
     .runOnJS(true)
@@ -350,6 +380,8 @@ export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, cel
       }
       if (tool === "free") {
         drag.current = { mode: "stroke", dx: 0, dy: 0 };
+        strokeLen.current = 0;
+        inkLeft.value = 1;
         setStroke([{ x: e.x, y: e.y }], false);
         Haptics.selectionAsync();
         playSfx("tap");
@@ -378,8 +410,24 @@ export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, cel
       if (d.mode === "stroke") {
         const pts = stroke.current;
         const last = pts[pts.length - 1];
-        const p = clamp({ x: e.x, y: e.y });
-        if (pts.length < STROKE_MAX && Math.hypot(p.x - last.x, p.y - last.y) >= STROKE_STEP) setStroke([...pts, p], false);
+        let p = clamp({ x: e.x, y: e.y });
+        const seg = Math.hypot(p.x - last.x, p.y - last.y);
+        if (pts.length >= STROKE_MAX || seg < STROKE_STEP) return;
+        const left = inkBudget - strokeLen.current;
+        if (seg >= left) {
+          // Out of ink: end the stroke exactly where the ink runs out, then judge it as if released.
+          const t = Math.max(0, left / seg);
+          p = { x: last.x + (p.x - last.x) * t, y: last.y + (p.y - last.y) * t };
+          strokeLen.current = inkBudget;
+          inkLeft.value = 0;
+          stroke.current = [...pts, p];
+          drag.current = null;
+          finishStroke();
+          return;
+        }
+        strokeLen.current += seg;
+        inkLeft.value = 1 - strokeLen.current / inkBudget;
+        setStroke([...pts, p], false);
         return;
       }
       const l = line.current;
@@ -397,16 +445,7 @@ export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, cel
         return;
       }
       if (d.mode === "stroke") {
-        const pts = stroke.current;
-        let len = 0;
-        for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
-        if (pts.length < 3 || len < MIN_LINE * 1.5) {
-          clearAim();
-          onCutChange(null);
-          return;
-        }
-        setStroke(pts, true);
-        onCutChange({ kind: "curve", pts: pts.map(toNorm) });
+        finishStroke();
         return;
       }
       const l = line.current;
@@ -431,6 +470,11 @@ export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, cel
     const len = Math.hypot(dx, dy) || 1;
     return { x: bx.value + (dx / len) * FAR, y: by.value + (dy / len) * FAR };
   });
+
+  const nopeOpacity = useDerivedValue(() => nope.value * 0.28);
+  const INK_BAR_W = Math.max(0, size.w - 2 * PAD);
+  const inkWidth = useDerivedValue(() => INK_BAR_W * inkLeft.value, [INK_BAR_W]);
+  const inkColor = useDerivedValue(() => (inkLeft.value < 0.2 ? theme.sideA : theme.ink), [theme]);
 
   const perfectPath = useMemo(() => {
     if (!perfect) return null;
@@ -558,6 +602,14 @@ export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, cel
                 )}
 
                 {!chopped && tool === "free" && (
+                  <Group>
+                    {/* ink left for this cut */}
+                    <RoundedRect x={PAD} y={8} width={INK_BAR_W} height={4} r={2} color={theme.gridMajor} />
+                    <RoundedRect x={PAD} y={8} width={inkWidth} height={4} r={2} color={inkColor} opacity={0.8} />
+                  </Group>
+                )}
+
+                {!chopped && tool === "free" && (
                   <Group opacity={lineAlpha}>
                     <Path path={strokeExt} color={theme.ink} style="stroke" strokeWidth={1.5} opacity={0.3}>
                       <DashPathEffect intervals={[6, 6]} />
@@ -568,6 +620,7 @@ export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, cel
                 )}
               </Group>
               <Picture picture={firePicture} />
+              <Rect x={0} y={0} width={size.w} height={size.h} color={theme.sideA} opacity={nopeOpacity} />
             </Canvas>
 
             {scene && shareA !== null && (
