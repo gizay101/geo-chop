@@ -3,7 +3,9 @@ import Storage from "expo-sqlite/kv-store";
 
 import type { Cut } from "@/game/geometry";
 
-export type RoundRecord = { iso: string; shareA: number; error: number; score: number; cut: Cut };
+import { COMPLETE_MAX_ERROR, scoreFor } from "@/game/scoring";
+
+export type RoundRecord = { iso: string; shareA: number; error: number; score: number; cut: Cut; pack?: string };
 
 const readJson = <T,>(key: string, fallback: T): T => {
   try {
@@ -51,6 +53,21 @@ const bestKey = (id: string, tool: string) => (tool === "free" ? `best:free:${id
 
 export function getBest(id: string, tool = "free"): number | null {
   return readJson<number | null>(bestKey(id, tool), null);
+}
+
+/** Completed = best cut within COMPLETE_MAX_ERROR (5%), i.e. a best score of at least 80. */
+export function isCompleted(id: string): boolean {
+  const b = getBest(id);
+  return b !== null && b >= scoreFor(COMPLETE_MAX_ERROR);
+}
+
+// ---- Onslaught: longest run of cuts within 15% ----
+export function getOnslaughtBest(): number {
+  return readJson<number>("onslaught:best", 0);
+}
+
+export function saveOnslaughtBest(rounds: number) {
+  if (rounds > getOnslaughtBest()) writeJson("onslaught:best", rounds);
 }
 
 // ---- the most recent chop, shown on the menu ----

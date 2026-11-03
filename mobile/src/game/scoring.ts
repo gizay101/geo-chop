@@ -1,5 +1,10 @@
 export type Grade = { name: string; emoji: string };
 
+/** A country counts as completed (pack progress) when cut within this many percentage points. */
+export const COMPLETE_MAX_ERROR = 5;
+/** Onslaught: a run survives while every cut is within this many points (smaller side ≥ 35%). */
+export const ONSLAUGHT_MAX_ERROR = 15;
+
 /** Every percentage point off costs this many points (out of 100). */
 export const POINTS_PER_PCT = 4;
 

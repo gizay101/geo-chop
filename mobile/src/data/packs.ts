@@ -53,8 +53,8 @@ export function flagOf(iso2: string): string {
 /** What is being split, in words. */
 export const METRIC_WORDS: Record<Metric, { goal: string; unit: string }> = {
   population: { goal: "Chop the population in half", unit: "people" },
-  gdp: { goal: "Chop the economy in half", unit: "GDP" },
-  billionaires: { goal: "Chop the billionaires in half", unit: "billionaires" },
+  gdp: { goal: "Economy: chop the GDP in half", unit: "GDP" },
+  billionaires: { goal: "Billionaires: chop them in half", unit: "billionaires" },
 };
 
 /** "125M people", "$5.9T GDP", "232 billionaires". */

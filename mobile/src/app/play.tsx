@@ -4,11 +4,11 @@ import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { playSfx } from "@/audio/sfx";
-import { entryFor, flagOf, loadPack, packKey, type PackId } from "@/data/packs";
+import { entryFor, flagOf, loadPack, PACK_INDEX, packKey, type PackEntry, type PackId } from "@/data/packs";
 import { batchesFor } from "@/game/batches";
 import { dailyCountries, puzzleNumber, ROUNDS_PER_DAY } from "@/game/daily";
-import { gradeFor } from "@/game/scoring";
-import { getDaily, saveBatchBest, saveBest, saveDailyRound, type RoundRecord } from "@/store/progress";
+import { gradeFor, ONSLAUGHT_MAX_ERROR } from "@/game/scoring";
+import { getDaily, getOnslaughtBest, saveBatchBest, saveBest, saveDailyRound, saveOnslaughtBest, type RoundRecord } from "@/store/progress";
 import type { Tool } from "@/render/ChopCanvas";
 import { RoundView, type RoundResult } from "@/ui/RoundView";
 import { useTheme, type Theme } from "@/ui/theme";
@@ -23,6 +23,7 @@ export default function Play() {
   const pack = p.pack ?? "countries";
   const tool: Tool = "free";
   if (p.mode === "daily") return <Daily />;
+  if (p.mode === "onslaught") return <Onslaught />;
   if (p.mode === "batch") return <BatchRun key={`${pack}-${p.continent}-${p.n}-${tool}`} pack={pack} continent={p.continent ?? ""} n={Number(p.n ?? 1)} tool={tool} />;
   return <Single iso={p.iso ?? "WLD"} pack={pack} tool={tool} />;
 }
@@ -35,7 +36,7 @@ const PACK_LABEL: Record<PackId, string> = {
   billionaires: "Billionaires",
 };
 
-const toRecord = (r: RoundResult): RoundRecord => ({ iso: r.iso, shareA: r.shareA, error: r.error, score: r.score, cut: r.cut });
+const toRecord = (r: RoundResult, pack?: string): RoundRecord => ({ iso: r.iso, shareA: r.shareA, error: r.error, score: r.score, cut: r.cut, pack });
 
 function Single({ iso, pack, tool }: { iso: string; pack: PackId; tool: Tool }) {
   const country = useMemo(() => loadPack(iso, pack), [iso, pack]);
@@ -71,6 +72,7 @@ function BatchRun({ pack, continent, n, tool }: { pack: PackId; continent: strin
         kicker={`${where.toUpperCase()} · ${batch.title.toUpperCase()}`}
         records={records}
         pack={pack}
+        onHome={() => router.dismissAll()}
         primary={
           next
             ? {
@@ -110,6 +112,74 @@ function BatchRun({ pack, continent, n, tool }: { pack: PackId; continent: strin
         });
       }}
       onNext={() => setRound((x) => x + 1)}
+    />
+  );
+}
+
+function shuffled<T>(xs: T[]): T[] {
+  const a = xs.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/** Onslaught: random countries from every pack, until one cut is more than 15% off. */
+function Onslaught() {
+  const [run, setRun] = useState(0);
+  const pool = useMemo<PackEntry[]>(() => shuffled(PACK_INDEX), [run]);
+  const [round, setRound] = useState(0);
+  const [records, setRecords] = useState<RoundRecord[]>([]);
+  const [over, setOver] = useState(false);
+  const survived = records.filter((r) => r.error <= ONSLAUGHT_MAX_ERROR).length;
+  const bestBefore = useMemo(() => getOnslaughtBest(), [run]);
+
+  if (over) {
+    const best = Math.max(bestBefore, survived);
+    return (
+      <Summary
+        kicker="ONSLAUGHT · RUN OVER"
+        bigValue={`${survived}`}
+        bigOf={survived === 1 ? " country" : " countries"}
+        sub={survived > bestBefore ? "New best run!" : `Best run: ${best}`}
+        records={records}
+        pack="countries"
+        primary={{
+          label: "Try again",
+          onPress: () => {
+            setRecords([]);
+            setRound(0);
+            setOver(false);
+            setRun((n) => n + 1);
+          },
+        }}
+        secondary={{ label: "Home", onPress: () => router.dismissAll() }}
+      />
+    );
+  }
+
+  const entry = pool[round % pool.length];
+  return (
+    <RoundView
+      key={`onslaught-${run}-${round}`}
+      country={loadPack(entry.iso, entry.pack)}
+      label={`Onslaught · ${survived} survived · stay within ${ONSLAUGHT_MAX_ERROR}%`}
+      allowRetry={false}
+      nextLabel="Next country →"
+      nextLabelFor={(r) => (r.error <= ONSLAUGHT_MAX_ERROR ? "Next country →" : "Run over · see results")}
+      onBack={() => router.back()}
+      onChopped={(r) => {
+        saveBest(packKey(entry.pack, r.iso), r.score);
+        const all = [...records, toRecord(r, entry.pack)];
+        setRecords(all);
+        saveOnslaughtBest(all.filter((x) => x.error <= ONSLAUGHT_MAX_ERROR).length);
+      }}
+      onNext={() => {
+        const lastRec = records[records.length - 1];
+        if (lastRec && lastRec.error > ONSLAUGHT_MAX_ERROR) setOver(true);
+        else setRound((x) => x + 1);
+      }}
     />
   );
 }
@@ -173,6 +243,10 @@ function Summary({
   pack,
   primary,
   secondary,
+  onHome,
+  bigValue,
+  bigOf,
+  sub,
   foot,
 }: {
   kicker: string;
@@ -180,6 +254,12 @@ function Summary({
   pack: PackId;
   primary: Action;
   secondary: Action;
+  /** Adds a Home button (back to the main menu). */
+  onHome?: () => void;
+  /** Override the big number (default: total score out of rounds × 100). */
+  bigValue?: string;
+  bigOf?: string;
+  sub?: string;
   foot?: string;
 }) {
   const theme = useTheme();
@@ -191,12 +271,13 @@ function Summary({
       <ScrollView contentContainerStyle={s.content}>
         <Text style={s.kicker}>{kicker}</Text>
         <Text style={s.total}>
-          {total.toFixed(1)}
-          <Text style={s.totalOf}> / {records.length * 100}</Text>
+          {bigValue ?? total.toFixed(1)}
+          <Text style={s.totalOf}>{bigOf ?? ` / ${records.length * 100}`}</Text>
         </Text>
+        {sub ? <Text style={s.subline}>{sub}</Text> : null}
         <View style={s.rows}>
           {records.map((r, i) => {
-            const e = entryFor(r.iso, pack);
+            const e = entryFor(r.iso, (r.pack as PackId | undefined) ?? pack);
             const g = gradeFor(r.error);
             return (
               <View key={i} style={s.row}>
@@ -230,6 +311,17 @@ function Summary({
         >
           <Text style={s.ghostText}>{secondary.label}</Text>
         </Pressable>
+        {onHome ? (
+          <Pressable
+            onPress={() => {
+              playSfx("tap");
+              onHome();
+            }}
+            style={({ pressed }) => [s.ghost, pressed && s.pressed]}
+          >
+            <Text style={s.ghostText}>Home</Text>
+          </Pressable>
+        ) : null}
         {foot ? <Text style={s.foot}>{foot}</Text> : null}
       </ScrollView>
     </SafeAreaView>
@@ -243,6 +335,7 @@ const makeStyles = (t: Theme) =>
     kicker: { color: t.gold, fontWeight: "900", letterSpacing: 1.5, textAlign: "center" },
     total: { color: t.ink, fontSize: 56, fontWeight: "900", textAlign: "center", fontVariant: ["tabular-nums"] },
     totalOf: { color: t.muted, fontSize: 24 },
+    subline: { color: t.gold, fontSize: 16, fontWeight: "800", textAlign: "center" },
     rows: { gap: 8, marginTop: 6 },
     row: {
       flexDirection: "row",

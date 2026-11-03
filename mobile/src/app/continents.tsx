@@ -6,7 +6,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { playSfx } from "@/audio/sfx";
 import type { PackId } from "@/data/packs";
 import { batchesFor, CONTINENT_EMOJI, continentsFor } from "@/game/batches";
-import { getBatchBest } from "@/store/progress";
+import { packKey } from "@/data/packs";
+import { isCompleted } from "@/store/progress";
 import { ScreenHeader } from "@/ui/ScreenHeader";
 import { useTheme, type Theme } from "@/ui/theme";
 
@@ -22,7 +23,10 @@ export default function Continents() {
     useCallback(() => {
       setDone(
         Object.fromEntries(
-          continents.map((c) => [c.name, batchesFor(pack, c.name).filter((b) => getBatchBest(b.id) !== null).length]),
+          continents.map((c) => [
+            c.name,
+            batchesFor(pack, c.name).filter((b) => b.entries.every((e) => isCompleted(packKey(pack, e.iso)))).length,
+          ]),
         ),
       );
       // eslint-disable-next-line react-hooks/exhaustive-deps

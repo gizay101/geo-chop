@@ -58,7 +58,7 @@ export function SlabArt({ width = 96, height = 80 }: { width?: number; height?: 
   );
 }
 
-export type IconName = "countries" | "islands" | "world" | "economy" | "billionaires" | "friends" | "home" | "packs" | "stats" | "settings" | "flame";
+export type IconName = "countries" | "islands" | "world" | "economy" | "billionaires" | "friends" | "home" | "packs" | "stats" | "settings" | "flame" | "bolt";
 
 /** 24-unit stroke icons. */
 export function Icon({ name, size = 30, color = "#EEF1F7" }: { name: IconName; size?: number; color?: string }) {
@@ -94,6 +94,9 @@ export function Icon({ name, size = 30, color = "#EEF1F7" }: { name: IconName; s
       break;
     case "settings":
       body = (<><Path {...p} strokeWidth={2} d="M4 7h10M18 7h2M4 17h4M12 17h8" /><Circle {...p} strokeWidth={2} cx={16} cy={7} r={2} /><Circle {...p} strokeWidth={2} cx={10} cy={17} r={2} /></>);
+      break;
+    case "bolt":
+      body = <Path {...p} d="M13 2L4 14h7l-1 8 9-12h-7z" />;
       break;
     case "flame":
       body = <Path fill={color} d="M12 2c1.2 3.6 5 5.4 5 10a5 5 0 0 1-10 0c0-2.2 1.1-3.8 2.4-4.8.2 1.9 1.3 2.9 2.4 3.1-.9-2.9-.6-5.6.2-8.3z" />;

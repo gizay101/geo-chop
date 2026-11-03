@@ -15,6 +15,12 @@ import { saveLastChop } from "@/store/progress";
 import { CountUp } from "@/ui/CountUp";
 import { useTheme, type Theme } from "@/ui/theme";
 
+/** Economy and billionaire rounds get a coloured heading so the player knows what they are splitting. */
+const GOAL_TINT: Record<string, { backgroundColor: string; color: string } | undefined> = {
+  gdp: { backgroundColor: "#FFCB52", color: "#0C0F15" },
+  billionaires: { backgroundColor: "#B7A6FF", color: "#0C0F15" },
+};
+
 /** Hidden for now (2026-11-03); the perfect-cut logic stays. */
 const SHOW_PERFECT_BUTTON = false;
 
@@ -36,6 +42,8 @@ type Props = {
   /** Practice allows re-chopping; the Daily is one chop per round. */
   allowRetry: boolean;
   nextLabel: string;
+  /** Optional: a label that depends on the result (Onslaught: next vs. run over). */
+  nextLabelFor?: (r: RoundResult) => string;
   onBack: () => void;
   /** Called once per chop, as soon as the result is known. */
   onChopped?: (r: RoundResult) => void;
@@ -43,7 +51,7 @@ type Props = {
 };
 
 /** One round: aim, chop, 3D reveal, score. */
-export function RoundView({ country, tool = "free", label, allowRetry, nextLabel, onBack, onChopped, onNext }: Props) {
+export function RoundView({ country, tool = "free", label, allowRetry, nextLabel, nextLabelFor, onBack, onChopped, onNext }: Props) {
   const theme = useTheme();
   const [cut, setCut] = useState<Cut | null>(null);
   const [result, setResult] = useState<RoundResult | null>(null);
@@ -126,7 +134,7 @@ export function RoundView({ country, tool = "free", label, allowRetry, nextLabel
         <Text style={s.country}>
           {flagOf(country.iso2)} {country.name}
         </Text>
-        <Text style={s.goal}>{METRIC_WORDS[country.metric ?? "population"].goal}</Text>
+        <Text style={[s.goal, GOAL_TINT[country.metric]]}>{METRIC_WORDS[country.metric ?? "population"].goal}</Text>
         <Text style={s.note}>{country.note ?? ""}</Text>
       </View>
 
@@ -217,7 +225,7 @@ export function RoundView({ country, tool = "free", label, allowRetry, nextLabel
                   }}
                   style={({ pressed }) => [s.chopBtn, pressed && s.pressed]}
                 >
-                  <Text style={s.chopText}>{nextLabel}</Text>
+                  <Text style={s.chopText}>{result && nextLabelFor ? nextLabelFor(result) : nextLabel}</Text>
                 </Pressable>
               </Animated.View>
             ) : null}

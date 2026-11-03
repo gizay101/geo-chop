@@ -8,7 +8,7 @@ import { playSfx } from "@/audio/sfx";
 import { entriesFor } from "@/data/packs";
 import { batchesFor, continentsFor } from "@/game/batches";
 import { puzzleNumber, ROUNDS_PER_DAY } from "@/game/daily";
-import { getDaily, getLastChop, getStreak } from "@/store/progress";
+import { getDaily, getLastChop, getOnslaughtBest, getStreak } from "@/store/progress";
 import { F } from "@/ui/fonts";
 import { CropMarks, GridBackground, Icon, SlabArt, type IconName } from "@/ui/menuArt";
 
@@ -30,12 +30,14 @@ export default function MainMenu() {
   const [daily, setDaily] = useState(() => getDaily(no));
   const [streak, setStreak] = useState(() => getStreak(no));
   const [last, setLast] = useState(() => getLastChop());
+  const [onslaught, setOnslaught] = useState(() => getOnslaughtBest());
 
   useFocusEffect(
     useCallback(() => {
       setDaily(getDaily(no));
       setStreak(getStreak(no));
       setLast(getLastChop());
+      setOnslaught(getOnslaughtBest());
     }, [no]),
   );
 
@@ -58,9 +60,9 @@ export default function MainMenu() {
     { n: "001", icon: "countries", title: "Countries", sub: `${entriesFor("countries").length} · ${countryPacks} packs of 4`, href: "/continents" },
     { n: "002", icon: "islands", title: "Islands", sub: `${entriesFor("islands").length} · ${batchesFor("islands").length} packs`, href: "/batches?pack=islands" },
     { n: "003", icon: "world", title: "The World", sub: "8.2 billion people", href: "/play?mode=single&pack=world&iso=WLD" },
-    { n: "004", icon: "economy", title: "Economy", sub: `Split the GDP · ${entriesFor("economy").length}`, href: "/batches?pack=economy", badge: "NEW" },
+    { n: "004", icon: "economy", title: "Economy", sub: `Split the GDP · ${entriesFor("economy").length}`, href: "/batches?pack=economy" },
     { n: "005", icon: "billionaires", title: "Billionaires", sub: `USA · ${billionaires}`, href: "/play?mode=single&pack=billionaires&iso=USA" },
-    { n: "006", icon: "friends", title: "Friends League", sub: "Private leaderboards", badge: "SOON" },
+    { n: "006", icon: "bolt", title: "Onslaught", sub: onslaught > 0 ? `Best run · ${onslaught}` : "Survive within 15%", href: "/play?mode=onslaught", badge: "NEW" },
   ];
 
   const segments = Array.from({ length: ROUNDS_PER_DAY }, (_, i) => i < played);

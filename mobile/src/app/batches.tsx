@@ -6,7 +6,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { playSfx } from "@/audio/sfx";
 import { flagOf, type PackId } from "@/data/packs";
 import { batchesFor } from "@/game/batches";
-import { getBatchBest } from "@/store/progress";
+import { packKey } from "@/data/packs";
+import { getBatchBest, isCompleted } from "@/store/progress";
 import { ScreenHeader } from "@/ui/ScreenHeader";
 import { useTheme, type Theme } from "@/ui/theme";
 
@@ -19,10 +20,12 @@ export default function Batches() {
   const { pack = "countries", continent = "" } = useLocalSearchParams<{ pack?: PackId; continent?: string }>();
   const batches = batchesFor(pack, continent || undefined);
   const [best, setBest] = useState<Record<string, number | null>>({});
+  const [done, setDone] = useState<Record<string, number>>({});
 
   useFocusEffect(
     useCallback(() => {
       setBest(Object.fromEntries(batches.map((b) => [b.id, getBatchBest(b.id)])));
+      setDone(Object.fromEntries(batches.map((b) => [b.id, b.entries.filter((e) => isCompleted(packKey(pack, e.iso))).length])));
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pack, continent]),
   );
@@ -38,6 +41,7 @@ export default function Batches() {
         contentContainerStyle={s.list}
         renderItem={({ item }) => {
           const b = best[item.id];
+          const pct = Math.round(((done[item.id] ?? 0) / item.entries.length) * 100);
           return (
             <Pressable
               onPress={() => {
@@ -60,6 +64,12 @@ export default function Batches() {
               <Text style={s.names} numberOfLines={1}>
                 {item.entries.map((e) => e.name).join(" · ")}
               </Text>
+              <View style={s.progressRow}>
+                <View style={s.progressTrack}>
+                  <View style={[s.progressFill, { width: `${pct}%`, backgroundColor: pct === 100 ? t.sideB : t.sideA }]} />
+                </View>
+                <Text style={[s.pct, pct === 100 && { color: t.sideB }]}>{pct}% complete</Text>
+              </View>
             </Pressable>
           );
         }}
@@ -79,5 +89,9 @@ const makeStyles = (t: Theme) =>
     best: { color: t.gold, fontSize: 15, fontWeight: "900", fontVariant: ["tabular-nums"] },
     flags: { fontSize: 30, letterSpacing: 2 },
     names: { color: t.muted, fontSize: 13 },
+    progressRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+    progressTrack: { flex: 1, height: 6, borderRadius: 3, backgroundColor: t.gridMajor, overflow: "hidden" },
+    progressFill: { height: "100%", borderRadius: 3 },
+    pct: { color: t.muted, fontSize: 12, fontWeight: "800", fontVariant: ["tabular-nums"] },
     pressed: { opacity: 0.85, transform: [{ scale: 0.98 }] },
   });
