@@ -4,3 +4,4 @@ pipeline/out/
 node_modules/
 .DS_Store
 Thumbs.db
+pipeline/.venv/

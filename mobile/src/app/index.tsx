@@ -38,11 +38,11 @@ export default function MainMenu() {
   const tiles: Tile[] = [
     { emoji: "🗺️", title: "Countries", subtitle: `${entriesFor("countries").length} to chop`, href: "/browse?pack=countries" },
     { emoji: "🏝️", title: "Islands", subtitle: `${entriesFor("islands").length} small islands`, href: "/browse?pack=islands" },
-    { emoji: "🌍", title: "The World", subtitle: "Split humanity in half", href: "/play?mode=single&iso=WLD" },
+    { emoji: "🌍", title: "The World", subtitle: "Split humanity in half", href: "/play?mode=single&pack=world&iso=WLD" },
     { emoji: "🏆", title: "Friends League", subtitle: "Private leaderboards", soon: "Invite friends with a link and compete on the daily. Coming soon." },
     { emoji: "✍️", title: "Freehand", subtitle: "Cut with any curve", href: "/browse?tool=free" },
-    { emoji: "💰", title: "Economy", subtitle: "Split the GDP", soon: "Chop a country's economy in half, using gridded GDP data. Coming soon." },
-    { emoji: "💎", title: "Billionaires", subtitle: "Where the money lives", soon: "Split a country's billionaires in half (city-level data). Coming soon." },
+    { emoji: "💰", title: "Economy", subtitle: `Split the GDP · ${entriesFor("economy").length}`, href: "/browse?pack=economy" },
+    { emoji: "💎", title: "Billionaires", subtitle: "Where the money lives", href: "/browse?pack=billionaires" },
   ];
 
   return (
@@ -96,7 +96,7 @@ export default function MainMenu() {
         </View>
 
         <Text style={s.footer}>
-          Best streak {streak.best} · {streak.played} dailies played{"\n"}Prototype · placeholder population data
+          Best streak {streak.best} · {streak.played} dailies played{"\n"}Population: GHSL 2025 (EC JRC) · GDP: Kummu et al. 2025 · Wikidata · Natural Earth
         </Text>
       </ScrollView>
     </SafeAreaView>

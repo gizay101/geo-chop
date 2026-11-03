@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 
 import { playSfx } from "@/audio/sfx";
-import { flagOf } from "@/data/packs";
+import { flagOf, METRIC_WORDS } from "@/data/packs";
 import { cutCrossesLand, perfectCut, splitShareCut, type Cut } from "@/game/geometry";
 import { gradeFor, scoreFor, type Grade } from "@/game/scoring";
 import { FIREWORKS_MAX_ERROR, T } from "@/game/timeline";
@@ -113,9 +113,9 @@ export function RoundView({ country, tool = "line", label, allowRetry, nextLabel
         <Text style={s.country}>
           {flagOf(country.iso2)} {country.name}
         </Text>
-        <Text style={s.goal}>Chop the population in half</Text>
+        <Text style={s.goal}>{METRIC_WORDS[country.metric ?? "population"].goal}</Text>
         <Text style={s.note}>
-          {[country.note, country.placeholder ? "placeholder population data" : null].filter(Boolean).join(" · ")}
+          {[country.note, country.placeholder ? "placeholder data" : country.source?.split(",")[0]].filter(Boolean).join(" · ")}
         </Text>
       </View>
 

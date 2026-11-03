@@ -46,14 +46,14 @@ export function getStreak(today: number): { current: number; best: number; playe
   return { current, best, played: done.size };
 }
 
-// ---- best score per country (separately for straight and freehand cuts) ----
-const bestKey = (iso: string, tool: string) => (tool === "free" ? `best:free:${iso}` : `best:${iso}`);
+// ---- best score per pack ("countries/JPN", "economy/JPN", ...), separately for freehand ----
+const bestKey = (id: string, tool: string) => (tool === "free" ? `best:free:${id}` : `best:${id}`);
 
-export function getBest(iso: string, tool = "line"): number | null {
-  return readJson<number | null>(bestKey(iso, tool), null);
+export function getBest(id: string, tool = "line"): number | null {
+  return readJson<number | null>(bestKey(id, tool), null);
 }
 
-export function saveBest(iso: string, score: number, tool = "line") {
-  const prev = getBest(iso, tool);
-  if (prev === null || score > prev) writeJson(bestKey(iso, tool), score);
+export function saveBest(id: string, score: number, tool = "line") {
+  const prev = getBest(id, tool);
+  if (prev === null || score > prev) writeJson(bestKey(id, tool), score);
 }

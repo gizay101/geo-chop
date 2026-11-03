@@ -1,3 +1,5 @@
+// SUPERSEDED by pipeline/real/build_packs.py (real GHSL / GDP / Wikidata data). Kept for reference only:
+// running it would overwrite the real packs with placeholder data.
 // GEO CHOP: prototype packs built from PLACEHOLDER population.
 //
 // This is a stand-in until the real GHSL pipeline (docs/PLAN.md §4) exists.

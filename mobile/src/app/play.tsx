@@ -4,7 +4,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { playSfx } from "@/audio/sfx";
-import { entryFor, flagOf, loadPack } from "@/data/packs";
+import { entryFor, flagOf, loadPack, packKey, type PackId } from "@/data/packs";
 import { dailyCountries, puzzleNumber, ROUNDS_PER_DAY } from "@/game/daily";
 import { gradeFor } from "@/game/scoring";
 import { getDaily, saveBest, saveDailyRound, type RoundRecord } from "@/store/progress";
@@ -12,16 +12,29 @@ import type { Tool } from "@/render/ChopCanvas";
 import { RoundView } from "@/ui/RoundView";
 import { useTheme, type Theme } from "@/ui/theme";
 
-/** /play?mode=daily  or  /play?mode=single&iso=JPN[&tool=free] */
+/** /play?mode=daily  or  /play?mode=single&pack=countries&iso=JPN[&tool=free] */
 export default function Play() {
-  const { mode = "single", iso = "JPN", tool = "line" } = useLocalSearchParams<{ mode?: string; iso?: string; tool?: Tool }>();
-  return mode === "daily" ? <Daily /> : <Single iso={iso} tool={tool} />;
+  const { mode = "single", iso = "JPN", pack = "countries", tool = "line" } = useLocalSearchParams<{
+    mode?: string;
+    iso?: string;
+    pack?: PackId;
+    tool?: Tool;
+  }>();
+  return mode === "daily" ? <Daily /> : <Single iso={iso} pack={pack} tool={tool} />;
 }
 
-function Single({ iso, tool }: { iso: string; tool: Tool }) {
-  const country = useMemo(() => loadPack(iso), [iso]);
-  const where = country.pack === "world" ? "The World" : country.pack === "islands" ? "Islands" : "Countries";
-  const label = tool === "free" ? `Freehand · ${where}` : country.pack === "world" ? where : `${where} · practice`;
+const PACK_LABEL: Record<PackId, string> = {
+  world: "The World",
+  countries: "Countries",
+  islands: "Islands",
+  economy: "Economy",
+  billionaires: "Billionaires",
+};
+
+function Single({ iso, pack, tool }: { iso: string; pack: PackId; tool: Tool }) {
+  const country = useMemo(() => loadPack(iso, pack), [iso, pack]);
+  const where = PACK_LABEL[pack];
+  const label = tool === "free" ? `Freehand · ${where}` : pack === "world" ? where : `${where} · practice`;
   return (
     <RoundView
       country={country}
@@ -30,7 +43,7 @@ function Single({ iso, tool }: { iso: string; tool: Tool }) {
       allowRetry
       nextLabel="Done ✓"
       onBack={() => router.back()}
-      onChopped={(r) => saveBest(r.iso, r.score, tool)}
+      onChopped={(r) => saveBest(packKey(pack, r.iso), r.score, tool)}
       onNext={() => router.back()}
     />
   );
@@ -60,7 +73,7 @@ function Daily() {
       onChopped={(r) => {
         const rec: RoundRecord = { iso: r.iso, shareA: r.shareA, error: r.error, score: r.score, cut: r.cut };
         saveDailyRound(no, round, rec, ROUNDS_PER_DAY);
-        saveBest(r.iso, r.score);
+        saveBest(packKey("countries", r.iso), r.score);
         setRecords(getDaily(no));
       }}
       onNext={() => setRound((n) => n + 1)}

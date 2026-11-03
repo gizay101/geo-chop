@@ -4,11 +4,11 @@ import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { playSfx } from "@/audio/sfx";
-import { entriesFor, flagOf, type PackId } from "@/data/packs";
+import { entriesFor, flagOf, formatTotal, packKey, type PackId } from "@/data/packs";
 import { getBest } from "@/store/progress";
 import { useTheme, type Theme } from "@/ui/theme";
 
-const TITLES: Record<string, string> = { countries: "Countries", islands: "Islands" };
+const TITLES: Record<string, string> = { countries: "Countries", islands: "Islands", economy: "Economy", billionaires: "Billionaires" };
 const TOOL_TITLES: Record<string, string> = { free: "Freehand" };
 
 /** Pick a country or island to practise. */
@@ -25,7 +25,7 @@ export default function Browse() {
 
   useFocusEffect(
     useCallback(() => {
-      setBest(Object.fromEntries(entries.map((e) => [e.iso, getBest(e.iso, tool)])));
+      setBest(Object.fromEntries(entries.map((e) => [packKey(e.pack, e.iso), getBest(packKey(e.pack, e.iso), tool)])));
     }, [entries, tool]),
   );
 
@@ -46,15 +46,15 @@ export default function Browse() {
       </View>
       <FlatList
         data={entries}
-        keyExtractor={(e) => e.iso}
+        keyExtractor={(e) => packKey(e.pack, e.iso)}
         contentContainerStyle={s.list}
         renderItem={({ item }) => {
-          const b = best[item.iso];
+          const b = best[packKey(item.pack, item.iso)];
           return (
             <Pressable
               onPress={() => {
                 playSfx("tap");
-                router.push(`/play?mode=single&iso=${item.iso}&tool=${tool}` as never);
+                router.push(`/play?mode=single&pack=${item.pack}&iso=${item.iso}&tool=${tool}` as never);
               }}
               style={({ pressed }) => [s.row, pressed && s.pressed]}
             >
@@ -62,7 +62,7 @@ export default function Browse() {
               <View style={{ flex: 1 }}>
                 <Text style={s.name}>{item.name}</Text>
                 <Text style={s.sub}>
-                  {formatPop(item.population)} people{item.note ? ` · ${item.note}` : ""}
+                  {formatTotal(item.metric, item.total)}{item.note ? ` · ${item.note}` : ""}
                 </Text>
               </View>
               <Text style={[s.best, b == null && s.bestNone]}>{b == null ? "–" : b.toFixed(1)}</Text>
@@ -72,12 +72,6 @@ export default function Browse() {
       />
     </SafeAreaView>
   );
-}
-
-function formatPop(n: number): string {
-  if (n >= 1e9) return `${(n / 1e9).toFixed(1)}B`;
-  if (n >= 1e6) return `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1)}M`;
-  return `${Math.round(n / 1e3)}K`;
 }
 
 const makeStyles = (t: Theme) =>

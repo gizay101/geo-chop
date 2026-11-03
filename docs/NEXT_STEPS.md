@@ -6,15 +6,17 @@ Written 2026-11-03. **iOS first**; Android follows from the same codebase. This 
 
 | # | Item | Status |
 |---|---|---|
-| 1 | **Main menu** + navigation between modes | building now |
-| 2 | **More content (placeholder data):** ~25 countries, an Islands pack, a World chop, and the Daily Chop (5 a day) | building now |
-| 3 | **Local player data:** results, streaks, best per country (on device) | building now |
-| 4 | **Accurate datasets:** GHSL population pipeline replacing the placeholders | next |
+| 1 | **Main menu** + navigation between modes | ✅ done |
+| 2 | **More content:** 34 countries, 15 islands, the World, Daily Chop (5 a day) | ✅ done |
+| 3 | **Local player data:** results, streaks, best per pack (on device) | ✅ done |
+| 4 | **Accurate datasets:** GHSL 2025 population (1 km; 100 m for islands), validated ≤ 0.3 pp | ✅ done: `pipeline/real/build_packs.py`, see [DATA_SOURCES.md](DATA_SOURCES.md) |
 | 5 | **Friends leaderboard backend** (Supabase "Friend Leagues"), §3 | ⏸ backburner (2026-11-03): single-player first |
-| 6 | **Freehand cutting** mode | building now |
-| 7 | **Economy mode:** split by GDP | later |
-| 8 | **Billionaires mode** | later |
+| 6 | **Freehand cutting** mode | ✅ done |
+| 7 | **Economy mode:** split by GDP (Kummu 2025 v4, 2024) | ✅ done, 23 countries |
+| 8 | **Billionaires mode** (Wikidata) | ✅ USA only (Wikidata coverage is thin elsewhere) |
 | 9 | Game Center (achievements, global board) | optional, v1.1 |
+| 10 | Binary pack format + CDN downloads (bundle size) | next |
+| 11 | In-app Credits screen (CC BY attribution) | next, needed before release |
 
 ---
 

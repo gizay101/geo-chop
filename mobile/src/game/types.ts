@@ -11,12 +11,18 @@ export type CountryPack = {
   iso: string;
   iso2: string;
   name: string;
-  pack: "countries" | "islands" | "world";
+  pack: "countries" | "islands" | "world" | "economy" | "billionaires";
+  /** What the weights measure. */
+  metric: "population" | "gdp" | "billionaires";
+  /** Sum of all weights (people, US$ PPP, or billionaires). */
+  total: number;
+  /** Data attribution shown in the round. */
+  source?: string;
   /** e.g. "Contiguous states": what part of the country is playable. */
   note: string | null;
-  /** True while the population is synthetic prototype data. */
+  /** True while the data is synthetic prototype data. */
   placeholder: boolean;
-  population: number;
+  population: number | null;
   width: number;
   height: number;
   /** Flat [x0, y0, x1, y1, ...] rings (outer rings and holes). */
