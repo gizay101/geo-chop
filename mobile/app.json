@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "GEO CHOP",
+    "slug": "geo-chop",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.geochop"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0F1626",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "app.geochop"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "geochop",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

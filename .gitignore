@@ -1,0 +1,6 @@
+# Raw downloaded datasets (large; re-download with pipeline scripts)
+pipeline/raw/
+pipeline/out/
+node_modules/
+.DS_Store
+Thumbs.db
