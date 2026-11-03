@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { LayoutChangeEvent, StyleSheet, Text, View } from "react-native";
+import { LayoutChangeEvent, StyleSheet, View } from "react-native";
 import {
+  BlurMask,
   Canvas,
   Circle,
   createPicture,
@@ -16,18 +17,24 @@ import {
 } from "@shopify/react-native-skia";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
+  cancelAnimation,
   Easing,
   type SharedValue,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
   withDelay,
+  withRepeat,
+  withSequence,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
+import { playSfx } from "@/audio/sfx";
+import { T } from "@/game/timeline";
 import type { ChopLine, CountryPack, Pt } from "@/game/types";
+import { CountUp } from "@/ui/CountUp";
 import type { Theme } from "@/ui/theme";
 import {
   buildColumns,
@@ -42,6 +49,7 @@ import {
   SEPARATION,
   SLAB_THICKNESS,
 } from "./columns3d";
+import { drawSparks, makeSparks, type Spark } from "./fireworks";
 
 const PAD = 28;
 const HANDLE_R = 9;
@@ -49,15 +57,19 @@ const HANDLE_HIT = 36;
 const MIN_LINE = 24;
 const FAR = 4000;
 const LABEL_W = 84;
+const GRID = 32;
+const GRID_EXTENT = 2400;
 
 type Props = {
   country: CountryPack;
   theme: Theme;
-  /** After a chop, the line is frozen and the 3D split is shown. */
+  /** After a chop, the line is frozen and the 3D split plays. */
   chopped: ChopLine | null;
   /** Fraction of population on side A (for the floating labels). */
   shareA: number | null;
   perfect: ChopLine | null;
+  /** Fire a small fireworks show at T.SCORE. */
+  celebrate: boolean;
   /** Changing this value clears the line. */
   resetKey: number;
   onLineChange: (line: ChopLine | null) => void;
@@ -65,7 +77,7 @@ type Props = {
 
 const IDENTITY_FINAL: CamFinal = { cx: 0, cy: 0, theta: 0, phi: 0, k: 1, ox: 0, oy: 0 };
 
-export function ChopCanvas({ country, theme, chopped, shareA, perfect, resetKey, onLineChange }: Props) {
+export function ChopCanvas({ country, theme, chopped, shareA, perfect, celebrate, resetKey, onLineChange }: Props) {
   const [size, setSize] = useState({ w: 0, h: 0 });
   const fit = useMemo<Fit>(() => {
     const s = Math.max(1, Math.min((size.w - 2 * PAD) / country.width, (size.h - 2 * PAD) / country.height));
@@ -85,6 +97,19 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, resetKey,
     pb.setFillType(FillType.EvenOdd);
     return pb.build();
   }, [country, fit]);
+
+  // Background grid in ground space, so it tilts and spins with the map.
+  const grid = useMemo(() => {
+    const minor = Skia.PathBuilder.Make();
+    const major = Skia.PathBuilder.Make();
+    const cx = size.w / 2, cy = size.h / 2;
+    for (let i = -GRID_EXTENT; i <= GRID_EXTENT; i += GRID) {
+      const pb = Math.round(i / GRID) % 4 === 0 ? major : minor;
+      pb.moveTo(cx + i, cy - GRID_EXTENT).lineTo(cx + i, cy + GRID_EXTENT);
+      pb.moveTo(cx - GRID_EXTENT, cy + i).lineTo(cx + GRID_EXTENT, cy + i);
+    }
+    return { minor: minor.build(), major: major.build() };
+  }, [size]);
 
   // ---------------- aiming ----------------
   const ax = useSharedValue(0);
@@ -114,14 +139,17 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, resetKey,
   const clamp = (p: Pt): Pt => ({ x: Math.max(0, Math.min(size.w, p.x)), y: Math.max(0, Math.min(size.h, p.y)) });
 
   // ---------------- chop animation state ----------------
+  const sweep = useSharedValue(0);
   const flash = useSharedValue(0);
+  const shake = useSharedValue(0);
   const sep = useSharedValue(0);
   const tilt = useSharedValue(0);
   const rise = useSharedValue(0);
   const orbit = useSharedValue(0);
   const pitch = useSharedValue(0);
+  const fireT = useSharedValue(0);
   const orbitStart = useRef({ orbit: 0, pitch: 0 });
-  const viewRef = useRef({ orbit: 0, pitch: 0 });
+  const spinning = useRef(false);
 
   const hmax = Math.max(40, 0.2 * Math.min(size.w, size.h));
 
@@ -147,38 +175,93 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, resetKey,
       .build();
     const pieceA = Skia.Path.MakeFromOp(countryPath, half, PathOp.Intersect);
     const pieceB = Skia.Path.MakeFromOp(countryPath, half, PathOp.Difference);
+
+    // The blade only needs to travel across the country, not the whole screen.
+    let tMin = Infinity, tMax = -Infinity;
+    for (const ring of country.rings) {
+      for (let i = 0; i < ring.length; i += 2) {
+        const t = (fit.ox + ring[i] * fit.s - a.x) * d.x + (fit.oy + ring[i + 1] * fit.s - a.y) * d.y;
+        tMin = Math.min(tMin, t); tMax = Math.max(tMax, t);
+      }
+    }
+    const bladeFrom = { x: a.x + d.x * (tMin - 30), y: a.y + d.y * (tMin - 30) };
+    const bladeTo = { x: a.x + d.x * (tMax + 30), y: a.y + d.y * (tMax + 30) };
+
     const final = finalCamera(country, fit, size.w, size.h, hmax);
     const model = buildColumns(country, fit, chopped, theme.sideA, theme.sideB, hmax);
-    // Draw the piece that ends up further from the viewer first.
-    const depthOf = (sign: number) => Math.sin(final.theta) * n.x * sign + Math.cos(final.theta) * n.y * sign;
-    const aIsBack = depthOf(1) < depthOf(-1);
-    return { a, d, n, pieceA, pieceB, final, model, aIsBack };
+    return { a, d, n, pieceA, pieceB, final, model, bladeFrom, bladeTo };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chopped, countryPath, fit, country, theme, hmax]);
 
+  const startSpin = () => {
+    spinning.current = true;
+    const from = orbit.value;
+    orbit.value = withRepeat(withTiming(from + 2 * Math.PI, { duration: T.SPIN_PERIOD, easing: Easing.linear }), -1);
+  };
+
   useEffect(() => {
+    cancelAnimation(orbit);
     orbit.value = 0;
     pitch.value = 0;
-    viewRef.current = { orbit: 0, pitch: 0 };
-    if (scene) {
-      flash.value = 1;
-      flash.value = withTiming(0, { duration: 500, easing: Easing.out(Easing.quad) });
-      sep.value = 0;
-      sep.value = withSpring(1, { damping: 10, stiffness: 120 });
-      tilt.value = 0;
-      tilt.value = withDelay(250, withTiming(1, { duration: 950, easing: Easing.inOut(Easing.cubic) }));
-      rise.value = 0;
-      rise.value = withDelay(850, withTiming(1, { duration: 1400, easing: Easing.linear }));
-      const t = setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light), 900);
-      return () => clearTimeout(t);
+    spinning.current = false;
+    fireT.value = 0;
+    if (!scene) {
+      sweep.value = 0; flash.value = 0; shake.value = 0; sep.value = 0; tilt.value = 0; rise.value = 0;
+      return;
     }
-    flash.value = 0; sep.value = 0; tilt.value = 0; rise.value = 0;
+    sweep.value = 0;
+    sweep.value = withTiming(1, { duration: T.SWEEP, easing: Easing.in(Easing.quad) });
+    flash.value = 0;
+    flash.value = withDelay(
+      T.IMPACT,
+      withSequence(withTiming(1, { duration: 0 }), withTiming(0, { duration: 700, easing: Easing.out(Easing.quad) })),
+    );
+    shake.value = 0;
+    shake.value = withDelay(T.IMPACT, withTiming(1, { duration: 320, easing: Easing.linear }));
+    sep.value = 0;
+    sep.value = withDelay(T.IMPACT, withSpring(1, { damping: 11, stiffness: 90 }));
+    tilt.value = 0;
+    tilt.value = withDelay(T.TILT_START, withTiming(1, { duration: T.TILT_DURATION, easing: Easing.inOut(Easing.cubic) }));
+    rise.value = 0;
+    rise.value = withDelay(T.RISE_START, withTiming(1, { duration: T.RISE_DURATION, easing: Easing.linear }));
+
+    const timers = [
+      setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy), T.IMPACT),
+      setTimeout(() => startSpin(), T.TILT_START + T.TILT_DURATION),
+      setTimeout(() => {
+        playSfx("rise");
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }, T.RISE_START),
+    ];
+    return () => timers.forEach(clearTimeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene]);
+
+  // Fireworks
+  const [sparks, setSparks] = useState<Spark[] | null>(null);
+  useEffect(() => {
+    if (!celebrate || !scene) {
+      setSparks(null);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setSparks(makeSparks(size.w / 2, size.h * 0.32, size.w * 0.7, [theme.gold, theme.sideA, theme.sideB, "#FFFFFF"]));
+      fireT.value = 0;
+      fireT.value = withTiming(2.3, { duration: 2300, easing: Easing.linear });
+      playSfx("fireworks");
+    }, T.SCORE);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [celebrate, scene]);
 
   const finalCam = scene?.final ?? IDENTITY_FINAL;
   const cam = useDerivedValue<Cam>(() => camAt(finalCam, tilt.value, orbit.value, pitch.value), [finalCam]);
   const camT = useDerivedValue(() => camTransform(cam.value));
+  const shakeT = useDerivedValue(() => {
+    const s = shake.value;
+    const amp = s > 0 && s < 1 ? 5 * (1 - s) : 0;
+    return [{ translateX: Math.sin(s * 38) * amp }, { translateY: Math.cos(s * 31) * amp * 0.6 }];
+  });
 
   const model = scene?.model ?? null;
   const picture = useDerivedValue(
@@ -191,6 +274,39 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, resetKey,
       ),
     [model, size.w, size.h],
   );
+  const firePicture = useDerivedValue(
+    () =>
+      createPicture(
+        (canvas) => {
+          if (sparks) drawSparks(canvas, sparks, fireT.value);
+        },
+        { width: Math.max(1, size.w), height: Math.max(1, size.h) },
+      ),
+    [sparks, size.w, size.h],
+  );
+
+  // Blade sweep: a bright streak whose head runs along the cut.
+  // Plain numbers only: these are captured by UI-thread worklets.
+  const bfx = scene?.bladeFrom.x ?? 0, bfy = scene?.bladeFrom.y ?? 0;
+  const btx = scene?.bladeTo.x ?? 0, bty = scene?.bladeTo.y ?? 0;
+  const snx = scene?.n.x ?? 0, sny = scene?.n.y ?? 0;
+  const bladeHead = useDerivedValue(() => {
+    const u = sweep.value;
+    return { x: bfx + (btx - bfx) * u, y: bfy + (bty - bfy) * u };
+  }, [bfx, bfy, btx, bty]);
+  const bladeTail = useDerivedValue(() => {
+    const u = Math.max(0, sweep.value - 0.45);
+    return { x: bfx + (btx - bfx) * u, y: bfy + (bty - bfy) * u };
+  }, [bfx, bfy, btx, bty]);
+  const bladeOpacity = useDerivedValue(() => (sweep.value < 1 ? 1 : 0));
+  const cutGlow = useDerivedValue(() => 1.5 + 4 * flash.value);
+
+  // Draw order of the two slabs: whichever is further from the camera goes first.
+  const aIsBack = useDerivedValue(() => {
+    const c = cam.value;
+    return Math.sin(c.theta) * snx + Math.cos(c.theta) * sny < 0 ? 1 : 0;
+  }, [snx, sny]);
+  const bIsBack = useDerivedValue(() => 1 - aIsBack.value);
 
   // ---------------- gestures ----------------
   const pan = Gesture.Pan()
@@ -199,7 +315,8 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, resetKey,
     .onBegin((e) => {
       if (chopped) {
         drag.current = { mode: "orbit", dx: 0, dy: 0 };
-        orbitStart.current = { ...viewRef.current };
+        cancelAnimation(orbit);
+        orbitStart.current = { orbit: orbit.value, pitch: pitch.value };
         return;
       }
       const l = line.current;
@@ -211,17 +328,15 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, resetKey,
         drag.current = { mode: "new", dx: 0, dy: 0 };
         setLine({ x: e.x, y: e.y }, { x: e.x, y: e.y });
         Haptics.selectionAsync();
+        playSfx("tap");
       }
     })
     .onUpdate((e) => {
       const d = drag.current;
       if (!d) return;
       if (d.mode === "orbit") {
-        const o = orbitStart.current.orbit + e.translationX * 0.008;
-        const p = Math.max(-0.6, Math.min(0.3, orbitStart.current.pitch - e.translationY * 0.004));
-        viewRef.current = { orbit: o, pitch: p };
-        orbit.value = o;
-        pitch.value = p;
+        orbit.value = orbitStart.current.orbit + e.translationX * 0.008;
+        pitch.value = Math.max(-0.6, Math.min(0.3, orbitStart.current.pitch - e.translationY * 0.004));
         return;
       }
       const l = line.current;
@@ -233,7 +348,11 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, resetKey,
     .onFinalize(() => {
       const d = drag.current;
       drag.current = null;
-      if (!d || d.mode === "orbit") return;
+      if (!d) return;
+      if (d.mode === "orbit") {
+        if (spinning.current) startSpin(); // keep spinning from wherever the player left it
+        return;
+      }
       const l = line.current;
       if (!l || Math.hypot(l.b.x - l.a.x, l.b.y - l.a.y) < MIN_LINE) {
         clearLine();
@@ -256,7 +375,6 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, resetKey,
     const len = Math.hypot(dx, dy) || 1;
     return { x: bx.value + (dx / len) * FAR, y: by.value + (dy / len) * FAR };
   });
-  const bladeWidth = useDerivedValue(() => 1 + 5 * flash.value);
 
   const perfectGround = useMemo(() => {
     if (!perfect) return null;
@@ -275,13 +393,21 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, resetKey,
     setSize({ w: width, h: height });
   };
 
-  const pieces = scene
-    ? [
-        { path: scene.pieceA, tint: theme.sideA, sign: 1 },
-        { path: scene.pieceB, tint: theme.sideB, sign: -1 },
-      ]
-    : [];
-  if (scene && !scene.aIsBack) pieces.reverse();
+  const slab = (path: SkPath | null, tint: string, sign: number, key: string) =>
+    path &&
+    scene && (
+      <SlabPiece
+        key={key}
+        path={path}
+        tint={tint}
+        theme={theme}
+        cam={cam}
+        camT={camT}
+        sep={sep}
+        nx={scene.n.x * sign}
+        ny={scene.n.y * sign}
+      />
+    );
 
   return (
     <View style={styles.fill} onLayout={onLayout}>
@@ -289,63 +415,80 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, resetKey,
         <GestureDetector gesture={pan}>
           <View style={styles.fill}>
             <Canvas style={styles.fill}>
-              {!scene ? (
-                <FlatSlab path={countryPath} theme={theme} />
-              ) : (
-                <>
-                  {pieces.map(
-                    (p, i) =>
-                      p.path && (
-                        <SlabPiece
-                          key={i}
-                          path={p.path}
-                          tint={p.tint}
-                          theme={theme}
-                          cam={cam}
-                          camT={camT}
-                          sep={sep}
-                          nx={scene.n.x * p.sign}
-                          ny={scene.n.y * p.sign}
-                        />
-                      ),
-                  )}
-                  <Group transform={camT}>
-                    <Line
-                      p1={{ x: scene.a.x - scene.d.x * FAR, y: scene.a.y - scene.d.y * FAR }}
-                      p2={{ x: scene.a.x + scene.d.x * FAR, y: scene.a.y + scene.d.y * FAR }}
-                      color={theme.blade}
-                      style="stroke"
-                      strokeWidth={bladeWidth}
-                      opacity={flash}
-                    />
-                    {perfectGround && (
-                      <Line p1={perfectGround.p1} p2={perfectGround.p2} color={theme.gold} style="stroke" strokeWidth={2.5}>
-                        <DashPathEffect intervals={[10, 6]} />
-                      </Line>
-                    )}
-                  </Group>
-                  <Picture picture={picture} />
-                </>
-              )}
-
-              {!chopped && (
-                <Group opacity={lineAlpha}>
-                  <Line p1={far1} p2={far2} color={theme.ink} style="stroke" strokeWidth={1.5} opacity={0.35}>
-                    <DashPathEffect intervals={[6, 6]} />
-                  </Line>
-                  <Line p1={p1} p2={p2} color={theme.ink} style="stroke" strokeWidth={3} strokeCap="round" />
-                  <Circle c={p1} r={HANDLE_R} color={theme.ink} />
-                  <Circle c={p1} r={HANDLE_R - 3} color={theme.paper} />
-                  <Circle c={p2} r={HANDLE_R} color={theme.ink} />
-                  <Circle c={p2} r={HANDLE_R - 3} color={theme.paper} />
+              <Group transform={shakeT}>
+                <Group transform={camT}>
+                  <Path path={grid.minor} color={theme.gridMinor} style="stroke" strokeWidth={1} />
+                  <Path path={grid.major} color={theme.gridMajor} style="stroke" strokeWidth={1} />
                 </Group>
-              )}
+
+                {!scene ? (
+                  <FlatSlab path={countryPath} theme={theme} />
+                ) : (
+                  <>
+                    <Group opacity={aIsBack}>
+                      {slab(scene.pieceA, theme.sideA, 1, "a1")}
+                      {slab(scene.pieceB, theme.sideB, -1, "b1")}
+                    </Group>
+                    <Group opacity={bIsBack}>
+                      {slab(scene.pieceB, theme.sideB, -1, "b2")}
+                      {slab(scene.pieceA, theme.sideA, 1, "a2")}
+                    </Group>
+                    <Group transform={camT}>
+                      {/* Glowing cut left behind by the blade */}
+                      <Line
+                        p1={scene.bladeFrom}
+                        p2={scene.bladeTo}
+                        color={theme.blade}
+                        style="stroke"
+                        strokeWidth={cutGlow}
+                        opacity={flash}
+                      >
+                        <BlurMask blur={3} style="solid" />
+                      </Line>
+                      {perfectGround && (
+                        <Line p1={perfectGround.p1} p2={perfectGround.p2} color={theme.gold} style="stroke" strokeWidth={2.5}>
+                          <DashPathEffect intervals={[10, 6]} />
+                        </Line>
+                      )}
+                    </Group>
+                    <Picture picture={picture} />
+                    {/* The blade itself */}
+                    <Group opacity={bladeOpacity}>
+                      <Line p1={bladeTail} p2={bladeHead} color={theme.blade} style="stroke" strokeWidth={10} strokeCap="round" opacity={0.35}>
+                        <BlurMask blur={8} style="normal" />
+                      </Line>
+                      <Line p1={bladeTail} p2={bladeHead} color={theme.blade} style="stroke" strokeWidth={3} strokeCap="round" />
+                      <Circle c={bladeHead} r={5} color={theme.blade}>
+                        <BlurMask blur={4} style="solid" />
+                      </Circle>
+                    </Group>
+                  </>
+                )}
+
+                {!chopped && (
+                  <Group opacity={lineAlpha}>
+                    <Line p1={far1} p2={far2} color={theme.ink} style="stroke" strokeWidth={1.5} opacity={0.3}>
+                      <DashPathEffect intervals={[6, 6]} />
+                    </Line>
+                    {/* dark outline keeps the line readable on both the sand land and the black ground */}
+                    <Line p1={p1} p2={p2} color={theme.inkOnLand} style="stroke" strokeWidth={6} strokeCap="round" />
+                    <Line p1={p1} p2={p2} color={theme.ink} style="stroke" strokeWidth={3} strokeCap="round" />
+                    <Circle c={p1} r={HANDLE_R + 1.5} color={theme.inkOnLand} />
+                    <Circle c={p1} r={HANDLE_R} color={theme.ink} />
+                    <Circle c={p1} r={HANDLE_R - 3.5} color={theme.sideA} />
+                    <Circle c={p2} r={HANDLE_R + 1.5} color={theme.inkOnLand} />
+                    <Circle c={p2} r={HANDLE_R} color={theme.ink} />
+                    <Circle c={p2} r={HANDLE_R - 3.5} color={theme.sideB} />
+                  </Group>
+                )}
+              </Group>
+              <Picture picture={firePicture} />
             </Canvas>
 
             {scene && shareA !== null && (
               <>
                 <FloatingLabel
-                  text={`${(shareA * 100).toFixed(1)}%`}
+                  value={shareA * 100}
                   color={theme.sideA}
                   anchor={scene.model.labelA}
                   nx={scene.n.x}
@@ -356,7 +499,7 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, resetKey,
                   lift={hmax * 0.55}
                 />
                 <FloatingLabel
-                  text={`${(100 - shareA * 100).toFixed(1)}%`}
+                  value={100 - shareA * 100}
                   color={theme.sideB}
                   anchor={scene.model.labelB}
                   nx={-scene.n.x}
@@ -379,7 +522,7 @@ export function ChopCanvas({ country, theme, chopped, shareA, perfect, resetKey,
 function FlatSlab({ path, theme }: { path: SkPath; theme: Theme }) {
   return (
     <Group>
-      <Group transform={[{ translateY: 4 }]}>
+      <Group transform={[{ translateY: 5 }]}>
         <Path path={path} color={theme.landEdge} />
       </Group>
       <Path path={path} color={theme.land} />
@@ -423,7 +566,7 @@ function SlabPiece({ path, tint, theme, cam, camT, sep, nx, ny }: PieceProps) {
       <Group transform={camT}>
         <Group transform={sepT}>
           <Path path={path} color={theme.land} />
-          <Path path={path} color={tint} opacity={0.14} />
+          <Path path={path} color={tint} opacity={0.16} />
           <Path path={path} color={theme.landEdge} style="stroke" strokeWidth={1} />
         </Group>
       </Group>
@@ -432,7 +575,7 @@ function SlabPiece({ path, tint, theme, cam, camT, sep, nx, ny }: PieceProps) {
 }
 
 type LabelProps = {
-  text: string;
+  value: number;
   color: string;
   anchor: Pt;
   nx: number;
@@ -443,8 +586,8 @@ type LabelProps = {
   lift: number;
 };
 
-/** A percentage chip that floats above one piece and follows the camera. */
-function FloatingLabel({ text, color, anchor, nx, ny, cam, sep, rise, lift }: LabelProps) {
+/** A percentage chip that floats above one piece, follows the camera and counts up. */
+function FloatingLabel({ value, color, anchor, nx, ny, cam, sep, rise, lift }: LabelProps) {
   const style = useAnimatedStyle(() => {
     const p = project(
       cam.value,
@@ -452,7 +595,7 @@ function FloatingLabel({ text, color, anchor, nx, ny, cam, sep, rise, lift }: La
       anchor.y + ny * SEPARATION * sep.value,
       lift,
     );
-    const t = Math.max(0, Math.min(1, (rise.value - 0.35) / 0.4));
+    const t = Math.max(0, Math.min(1, (rise.value - 0.3) / 0.3));
     return {
       opacity: t,
       transform: [{ translateX: p.x - LABEL_W / 2 }, { translateY: p.y - 18 - 10 * (1 - t) }, { scale: 0.8 + 0.2 * t }],
@@ -460,7 +603,7 @@ function FloatingLabel({ text, color, anchor, nx, ny, cam, sep, rise, lift }: La
   });
   return (
     <Animated.View pointerEvents="none" style={[styles.label, { backgroundColor: color }, style]}>
-      <Text style={styles.labelText}>{text}</Text>
+      <CountUp to={value} suffix="%" delay={T.COUNT_START} duration={T.COUNT_DURATION} style={styles.labelText} />
     </Animated.View>
   );
 }
@@ -476,7 +619,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     alignItems: "center",
     shadowColor: "#000",
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.4,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
     elevation: 4,

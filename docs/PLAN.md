@@ -82,24 +82,24 @@ GEO CHOP must have its own name, art, copy, scoring, UI and features. It must no
 - **Daily:** one chop per round. In Practice, there are unlimited re-chops.
 - **"Show perfect chop":** after scoring, a ghost line shows the exact 50/50 line *at your angle*, plus the global-best angle animation.
 
-### 2.3 Scoring (our own curve; tune with playtest data)
-Let `e = |your % − target %|` in percentage points.
+### 2.3 Scoring (linear, out of 100; decided 2026-11-03)
+Let `e = |your % − target %|` in percentage points. Percentages and scores show one decimal.
 
 ```
-base  = round(100 * exp(-e / 7))
-bonus = +10 "Clean Chop" if e < 0.5   (round cap 100 → displayed as 100 + ✨)
-hint penalty multiplies base: Terrain ×0.9, Night lights ×0.75, Cities ×0.6 (cumulative ladder)
+score = max(0, 100 − 4 × e)        // POINTS_PER_PCT = 4, in mobile/src/game/scoring.ts
+hint penalty (later): Terrain ×0.9, Night lights ×0.75, Cities ×0.6 (cumulative ladder)
+fireworks + success chime when e ≤ 5
 ```
 
 | Error (pp) | Score | Grade |
 |---|---|---|
-| < 0.5 | 100 ✨ | **Surgical** |
-| 1 | 87 | **Razor** |
-| 2 | 75 | **Sharp** |
-| 3 | 65 | **Clean** |
-| 5 | 49 | **Rough** |
-| 10 | 24 | **Hacked** |
-| 20 | 6 | **Butchered** |
+| < 0.5 | 98.0–100 | **Surgical** ✨ |
+| 1.3 | 94.8 | **Razor** |
+| 2 | 92.0 | **Sharp** |
+| 4 | 84.0 | **Clean** |
+| 8 | 68.0 | **Rough** |
+| 15 | 40.0 | **Hacked** |
+| ≥ 25 | 0 | **Butchered** |
 
 The daily total is out of 500, plus a bonus count of ✨ marks. Grade names give a voice to the game and work well in share text.
 
