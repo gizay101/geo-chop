@@ -469,7 +469,18 @@ For "you beat X% of players" and global average splits per country:
 ---
 
 ## 10. Immediate next steps
-1. Confirm the open questions above.
-2. **M0 data spike:** set up `pipeline/`, download Natural Earth + GHS-POP 2025 (30″), and bake & validate 5 countries.
-3. Scaffold the Expo app with Skia and render one country pack with a draggable line (M1 start).
-4. Reserve the name in both stores, plus the domain and social handles.
+
+**Done (2026-11-03):** Expo app scaffolded. A playable chop round works on 5 countries using *placeholder* population from `pipeline/proto/make-proto.mjs`.
+
+**TODO**
+- [ ] **You:** test the prototype on your phone in Expo Go and report how drawing the line feels.
+- [ ] **Replace the placeholder population with real GHSL data (M0):**
+  - [ ] Set up the Python pipeline in `pipeline/` (rasterio, geopandas, shapely, pyproj).
+  - [ ] Download GHS-POP 2025 at 30″ (~1 km). Natural Earth borders are already downloaded.
+  - [ ] Per country: clip, project to LAEA, sum population into the grid, quadtree-compress to ≤ 20k points.
+  - [ ] Validate: 2,000 random lines per country, max error < 0.15 pp against full resolution.
+  - [ ] Export packs in the existing app format (`mobile/src/data/countries/*.json`) so the app needs no changes. Set `placeholder: false`.
+  - [ ] Check national totals against UN WPP 2024.
+- [ ] Visual polish (M2): tilt plus 3D hex columns, rolling counters, sounds, Bricolage font.
+- [ ] Confirm the open questions in §9.
+- [ ] Reserve the name in both stores, plus the domain and social handles.
