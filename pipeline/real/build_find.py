@@ -9,6 +9,7 @@ from pathlib import Path
 
 import numpy as np
 from shapely.geometry import Polygon, shape
+from shapely.ops import unary_union
 
 ROOT = Path(__file__).resolve().parents[2]
 NE = ROOT / "pipeline" / "raw" / "naturalearth"
@@ -55,7 +56,7 @@ def build(name, title, items, proj, tol):
     ys = np.concatenate([r[0][:, 1] for *_, pp in projected for r in pp])
     x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
     span = max(x1 - x0, y1 - y0)
-    feats = []
+    feats, allg = [], []
     for fid, fname, extra, pp in projected:
         rings, area = [], 0.0
         bx0 = by0 = 1e9
@@ -70,6 +71,7 @@ def build(name, title, items, proj, tol):
                 if g.is_empty or g.area < 1e-8:
                     continue
                 area += g.area
+                allg.append(g)
                 gx0, gy0, gx1, gy1 = g.bounds
                 bx0, by0, bx1, by1 = min(bx0, gx0), min(by0, gy0), max(bx1, gx1), max(by1, gy1)
                 for ring in [g.exterior, *g.interiors]:
@@ -79,8 +81,17 @@ def build(name, title, items, proj, tol):
         if rings:
             feats.append({"id": fid, "name": fname, **extra, "area": area,
                           "bbox": [int(bx0 * Q), int(by0 * Q), int(bx1 * Q), int(by1 * Q)], "rings": rings})
+    # one merged landmass (closes the hairline gaps between neighbours) for drawing
+    eps = 0.0004
+    u = unary_union([g.buffer(eps, join_style=2) for g in allg]).buffer(-eps, join_style=2).simplify(tol / 2)
+    land = []
+    for g in getattr(u, "geoms", [u]):
+        for ring in [g.exterior, *g.interiors]:
+            c = np.asarray(ring.coords)
+            if len(c) >= 4:
+                land.append([int(round(v * Q)) for v in c.ravel()])
     OUT.mkdir(parents=True, exist_ok=True)
-    out = {"title": title, "q": Q, "width": (x1 - x0) / span, "height": (y1 - y0) / span, "features": feats}
+    out = {"title": title, "q": Q, "width": (x1 - x0) / span, "height": (y1 - y0) / span, "land": land, "features": feats}
     path = OUT / f"{name}.json"
     path.write_text(json.dumps(out, separators=(",", ":")), encoding="utf-8")
     print(f"{name}: {len(feats)} features, {sum(f.get('target', True) for f in feats)} targets, {path.stat().st_size // 1024} KB")

@@ -26,14 +26,14 @@ const SURVIVE = 50;
 
 // ---------------------------------------------------------------- data
 type Feature = { id: string; name: string; iso2: string; continent: string; target: boolean; area: number; rings: number[][] };
-type WorldMap = { width: number; height: number; features: Feature[] };
+type WorldMap = { width: number; height: number; land: number[][]; features: Feature[] };
 
 let WORLD: WorldMap | null = null;
 function world(): WorldMap {
   if (!WORLD) {
     const raw = require("../data/find/world.json");
     const s = B / raw.q;
-    WORLD = { width: raw.width, height: raw.height, features: raw.features.map((f: Feature) => ({ ...f, rings: f.rings.map((r) => r.map((v) => v * s)) })) };
+    WORLD = { width: raw.width, height: raw.height, land: raw.land.map((r: number[]) => r.map((v) => v * s)), features: raw.features.map((f: Feature) => ({ ...f, rings: f.rings.map((r) => r.map((v) => v * s)) })) };
   }
   return WORLD;
 }
@@ -205,7 +205,7 @@ type Phase = "cut" | "choose" | "result";
 
 function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Feature; label: string; onDone: (score: number) => void; nextLabel: string; deferDone?: boolean }) {
   const map = world();
-  const land = useMemo(() => ringsPath(map.features), [map]);
+  const land = useMemo(() => ringsPath([{ rings: map.land } as Feature]), [map]);
   const targetPath = useMemo(() => ringsPath([target]), [target]);
   const full = useMemo(() => Skia.PathBuilder.Make().addRect(Skia.XYWHRect(-40, -40, map.width * B + 80, map.height * B + 80)).build(), [map]);
 
