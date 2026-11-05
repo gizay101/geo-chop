@@ -128,7 +128,7 @@ function shuffled<T>(xs: T[]): T[] {
 /** Onslaught: random countries from every pack, until one cut is more than 15% off. */
 function Onslaught() {
   const [run, setRun] = useState(0);
-  const pool = useMemo<PackEntry[]>(() => shuffled(PACK_INDEX), [run]);
+  const pool = useMemo<PackEntry[]>(() => shuffled(PACK_INDEX.filter((e) => e.pack === "countries")), [run]);
   const [round, setRound] = useState(0);
   const [records, setRecords] = useState<RoundRecord[]>([]);
   const [over, setOver] = useState(false);

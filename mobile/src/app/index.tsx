@@ -104,6 +104,16 @@ export default function MainMenu() {
           <SlabArt />
         </Pressable>
 
+        <Pressable onPress={() => go("/find")} style={({ pressed }) => [s.tile, s.daily, { minHeight: 96 }, pressed && s.pressed]}>
+          <CropMarks size={12} />
+          <View style={{ flex: 1, gap: 4 }}>
+            <Text style={s.index}>NEW · FIND & SLICE</Text>
+            <Text style={s.dailyTitle}>Cut the world down to one country</Text>
+            <Text style={s.sub}>Daily + Onslaught</Text>
+          </View>
+          <Icon name="world" size={40} />
+        </Pressable>
+
         <Text style={s.label}>MODES</Text>
         <View style={s.grid}>
           {tiles.map((t) => {
