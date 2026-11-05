@@ -6,7 +6,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Canvas, DashPathEffect, FillType, Group, Path, Skia, type SkPath } from "@shopify/react-native-skia";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { Easing, useDerivedValue, useSharedValue, withTiming } from "react-native-reanimated";
+import { Easing, useDerivedValue, useSharedValue, withDelay, withTiming } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import Storage from "expo-sqlite/kv-store";
 
@@ -102,7 +102,7 @@ function scoreKept(kept: SkPath, target: SkPath, land: SkPath) {
   return { score: Math.round(100 * iou * 10) / 10, overPct: inT ? (over / inT) * 100 : 0, underPct: inT ? (under / inT) * 100 : 0 };
 }
 
-const verdict = (s: number) => (s >= 90 ? "Surgical!" : s >= 70 ? "Clean cut" : s >= 45 ? "Rough cut" : "You got chopped!");
+const verdict = (s: number) => (s >= 90 ? "Surgical!" : s >= 70 ? "Clean cut" : s >= 45 ? "Rough cut" : "You are chopped!");
 
 // ---------------------------------------------------------------- screen
 export default function Find() {
@@ -168,7 +168,7 @@ function OnslaughtFind() {
   const survived = scores.filter((s) => s >= SURVIVE).length;
   if (over) {
     const best = read<number>("find:onslaught:best", 0);
-    return <End title="ONSLAUGHT · YOU GOT CHOPPED" big={`${survived}`} of={survived === 1 ? " country" : " countries"} lines={[`Best run: ${best}`]} again={() => { setScores([]); setOver(false); setRun((r) => r + 1); }} />;
+    return <End title="ONSLAUGHT · YOU ARE CHOPPED!" big={`${survived}`} of={survived === 1 ? " country" : " countries"} lines={[`Best run: ${best}`]} again={() => { setScores([]); setOver(false); setRun((r) => r + 1); }} />;
   }
   return (
     <FindRound
@@ -236,7 +236,8 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
     minS.current = fitAll(width, height) * 0.8; // also refits after the phone rotates
   };
   const viewT = useDerivedValue(() => [{ translateX: vx.value }, { translateY: vy.value }, { scale: vs.value }]);
-  const hair = useDerivedValue(() => 0.8 / vs.value);
+  const reveal = useSharedValue(0);
+  const revealFill = useDerivedValue(() => 0.45 * reveal.value);
   const line = useDerivedValue(() => 2.5 / vs.value);
   const drop = useSharedValue(0);
   const dropT = useDerivedValue(() => [{ translateY: drop.value * 300 }]);
@@ -270,8 +271,12 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
     if (!pieces) return;
     const p = toBase(x, y);
     const hit = pieces[0].contains(p.x, p.y) ? 0 : pieces[1].contains(p.x, p.y) ? 1 : -1;
-    if (hit < 0) return;
-    const i = hit as 0 | 1;
+    if (hit >= 0) removePiece(hit as 0 | 1);
+  };
+
+  /** 0 = the orange piece, 1 = the green (teal) piece. */
+  const removePiece = (i: 0 | 1) => {
+    if (!pieces) return;
     playSfx("tap");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setDropped(pieces[i]);
@@ -319,7 +324,10 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
       Haptics.notificationAsync(r.score >= 70 ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Warning);
     }, 1400);
     // zoom to the target so the player sees how close they were
+    // Reveal: zoom into the real country, then fade its outline in.
     zoomTo(targetPath.computeTightBounds(), 80);
+    reveal.value = 0;
+    reveal.value = withDelay(550, withTiming(1, { duration: 700 }));
     if (!deferDone) onDoneLater.current = () => onDone(r.score);
     else onDoneLater.current = () => onDone(r.score);
   };
@@ -399,7 +407,7 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
 
   const help =
     phase === "cut" ? (cuts ? "Keep cutting, or press Finished." : "Swipe to slice · hold then drag to move · pinch to zoom")
-    : phase === "choose" ? "Tap the piece to drop." : "";
+    : phase === "choose" ? "Remove orange or green (or tap a piece)." : "";
 
   return (
     <SafeAreaView style={st.screen} edges={["top", "bottom", "left", "right"]}>
@@ -421,7 +429,6 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
                 <Path path={land} color={C.sand} opacity={0.12} />
                 <Group clip={kept}>
                   <Path path={land} color={C.sand} />
-                  <Path path={land} color={C.edge} style="stroke" strokeWidth={hair} />
                 </Group>
                 {pieces && (
                   <>
@@ -439,8 +446,8 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
                 )}
                 {phase === "result" && (
                   <>
-                    <Path path={targetPath} color={C.gold} opacity={0.35} />
-                    <Path path={targetPath} color={C.gold} style="stroke" strokeWidth={line} />
+                    <Path path={targetPath} color={C.gold} opacity={revealFill} />
+                    <Path path={targetPath} color={C.gold} style="stroke" strokeWidth={line} opacity={reveal} />
                   </>
                 )}
                 <Path path={strokePath} color={C.ink} style="stroke" strokeWidth={line} strokeCap="round" strokeJoin="round" />
@@ -451,12 +458,24 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
       </View>
 
       <View style={st.bottom}>
-        {phase !== "result" ? (
+        {phase === "choose" ? (
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <Pressable onPress={() => removePiece(0)} style={({ pressed }) => [st.primary, { flex: 2, backgroundColor: C.orange }, pressed && { opacity: 0.85 }]}>
+              <Text style={st.primaryText}>Remove orange</Text>
+            </Pressable>
+            <Pressable onPress={undo} style={({ pressed }) => [st.ghost, { flex: 1, marginTop: 0 }, pressed && { opacity: 0.85 }]}>
+              <Text style={st.ghostText}>↶</Text>
+            </Pressable>
+            <Pressable onPress={() => removePiece(1)} style={({ pressed }) => [st.primary, { flex: 2, backgroundColor: C.teal }, pressed && { opacity: 0.85 }]}>
+              <Text style={st.primaryText}>Remove green</Text>
+            </Pressable>
+          </View>
+        ) : phase === "cut" ? (
           <View style={{ flexDirection: "row", gap: 10 }}>
             <Pressable
-              disabled={phase !== "choose" && history.length === 0}
+              disabled={history.length === 0}
               onPress={undo}
-              style={({ pressed }) => [st.ghost, { flex: 1, marginTop: 0 }, phase !== "choose" && history.length === 0 && { opacity: 0.35 }, pressed && { opacity: 0.85 }]}
+              style={({ pressed }) => [st.ghost, { flex: 1, marginTop: 0 }, history.length === 0 && { opacity: 0.35 }, pressed && { opacity: 0.85 }]}
             >
               <Text style={st.ghostText}>↶ Undo</Text>
             </Pressable>
