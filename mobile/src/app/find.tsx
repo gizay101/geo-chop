@@ -214,6 +214,7 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
   const [dropped, setDropped] = useState<SkPath | null>(null);
   const [phase, setPhase] = useState<Phase>("cut");
   const [cuts, setCuts] = useState(0);
+  const [history, setHistory] = useState<SkPath[]>([]);
   const [result, setResult] = useState<ReturnType<typeof scoreKept> | null>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
 
@@ -274,13 +275,38 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
     playSfx("tap");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setDropped(pieces[i]);
+    setHistory((h) => [...h, kept]);
     setKept(pieces[1 - i]);
+    // zoom to the land that is left
+    const left = Skia.Path.MakeFromOp(pieces[1 - i], land, 1 /* Intersect */);
+    if (left && !left.isEmpty()) zoomTo(left.computeTightBounds(), 60);
     setPieces(null);
     setCuts((c) => c + 1);
     setPhase("cut");
     drop.value = 0;
     drop.value = withTiming(1, { duration: 500, easing: Easing.in(Easing.quad) });
     setTimeout(() => setDropped(null), 520);
+  };
+
+  const zoomTo = (b: { x: number; y: number; width: number; height: number }, pad: number) => {
+    const s = Math.min((size.w - pad) / Math.max(b.width, 1), (size.h - pad) / Math.max(b.height, 1), minS.current * 30);
+    vs.value = withTiming(s, { duration: 600 });
+    vx.value = withTiming(size.w / 2 - (b.x + b.width / 2) * s, { duration: 600 });
+    vy.value = withTiming(size.h / 2 - (b.y + b.height / 2) * s, { duration: 600 });
+  };
+
+  const undo = () => {
+    playSfx("tap");
+    if (phase === "choose") {
+      setPieces(null);
+      setPhase("cut");
+      return;
+    }
+    const prev = history[history.length - 1];
+    if (!prev) return;
+    setKept(prev);
+    setHistory((h) => h.slice(0, -1));
+    setCuts((c) => Math.max(0, c - 1));
   };
 
   const finish = () => {
@@ -293,11 +319,7 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
       Haptics.notificationAsync(r.score >= 70 ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Warning);
     }, 1400);
     // zoom to the target so the player sees how close they were
-    const b = targetPath.computeTightBounds();
-    const s = Math.min((size.w - 80) / Math.max(b.width, 1), (size.h - 80) / Math.max(b.height, 1), minS.current * 14);
-    vs.value = withTiming(s, { duration: 700 });
-    vx.value = withTiming(size.w / 2 - (b.x + b.width / 2) * s, { duration: 700 });
-    vy.value = withTiming(size.h / 2 - (b.y + b.height / 2) * s, { duration: 700 });
+    zoomTo(targetPath.computeTightBounds(), 80);
     if (!deferDone) onDoneLater.current = () => onDone(r.score);
     else onDoneLater.current = () => onDone(r.score);
   };
@@ -322,16 +344,38 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
       setTimeout(() => (pinching.current = false), 50);
     });
 
+  // One finger: a quick swipe cuts; press and hold (~0.25 s) then drag moves the map.
+  const touch = useRef<{ mode: "pending" | "draw" | "move"; x: number; y: number; vx: number; vy: number; timer?: ReturnType<typeof setTimeout> }>({ mode: "pending", x: 0, y: 0, vx: 0, vy: 0 });
   const pan = Gesture.Pan()
     .runOnJS(true)
     .minDistance(0)
     .maxPointers(1)
     .onBegin((e) => {
-      if (pinching.current || phase !== "cut") return;
-      stroke.current = [toBase(e.x, e.y)];
+      const t = touch.current;
+      clearTimeout(t.timer);
+      touch.current = { mode: "pending", x: e.x, y: e.y, vx: vx.value, vy: vy.value };
+      touch.current.timer = setTimeout(() => {
+        if (touch.current.mode === "pending" && !pinching.current) {
+          touch.current.mode = "move";
+          Haptics.selectionAsync();
+        }
+      }, 250);
     })
     .onUpdate((e) => {
-      if (pinching.current || phase !== "cut" || !stroke.current.length) return;
+      const t = touch.current;
+      if (pinching.current) return;
+      if (t.mode === "move") {
+        vx.value = t.vx + (e.x - t.x);
+        vy.value = t.vy + (e.y - t.y);
+        return;
+      }
+      if (t.mode === "pending") {
+        if (Math.hypot(e.x - t.x, e.y - t.y) < 8 || phase !== "cut") return;
+        clearTimeout(t.timer);
+        t.mode = "draw";
+        stroke.current = [toBase(t.x, t.y)];
+      }
+      if (phase !== "cut" || !stroke.current.length) return;
       const p = toBase(e.x, e.y);
       const last = stroke.current[stroke.current.length - 1];
       if (Math.hypot(p.x - last.x, p.y - last.y) * vs.value < 5) return;
@@ -341,7 +385,11 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
       strokePath.value = pb.build();
     })
     .onFinalize((e) => {
-      if (pinching.current) return;
+      const t = touch.current;
+      clearTimeout(t.timer);
+      const mode = t.mode;
+      t.mode = "pending";
+      if (pinching.current || mode === "move") return;
       if (phase === "choose") return choose(e.x, e.y);
       const pts = stroke.current;
       stroke.current = [];
@@ -350,7 +398,7 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
     });
 
   const help =
-    phase === "cut" ? (cuts ? "Keep cutting, or press Finished." : "Slice the map with your finger. Pinch to zoom, two fingers to move.")
+    phase === "cut" ? (cuts ? "Keep cutting, or press Finished." : "Swipe to slice · hold then drag to move · pinch to zoom")
     : phase === "choose" ? "Tap the piece to drop." : "";
 
   return (
@@ -404,13 +452,22 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
 
       <View style={st.bottom}>
         {phase !== "result" ? (
-          <Pressable
-            disabled={cuts === 0 || phase !== "cut"}
-            onPress={() => { playSfx("tap"); finish(); }}
-            style={({ pressed }) => [st.primary, (cuts === 0 || phase !== "cut") && { opacity: 0.35 }, pressed && { opacity: 0.85 }]}
-          >
-            <Text style={st.primaryText}>Finished ✓</Text>
-          </Pressable>
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <Pressable
+              disabled={phase !== "choose" && history.length === 0}
+              onPress={undo}
+              style={({ pressed }) => [st.ghost, { flex: 1, marginTop: 0 }, phase !== "choose" && history.length === 0 && { opacity: 0.35 }, pressed && { opacity: 0.85 }]}
+            >
+              <Text style={st.ghostText}>↶ Undo</Text>
+            </Pressable>
+            <Pressable
+              disabled={cuts === 0 || phase !== "cut"}
+              onPress={() => { playSfx("tap"); finish(); }}
+              style={({ pressed }) => [st.primary, { flex: 2 }, (cuts === 0 || phase !== "cut") && { opacity: 0.35 }, pressed && { opacity: 0.85 }]}
+            >
+              <Text style={st.primaryText}>Finished ✓</Text>
+            </Pressable>
+          </View>
         ) : (
           result && (
             <>
