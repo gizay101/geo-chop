@@ -7,7 +7,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Canvas, DashPathEffect, FillType, Group, Path, Skia, type SkPath } from "@shopify/react-native-skia";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { Easing, useDerivedValue, useSharedValue, withDelay, withTiming } from "react-native-reanimated";
+import { Easing, useDerivedValue, useSharedValue, withDelay, withSequence, withSpring, withTiming } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import Storage from "expo-sqlite/kv-store";
 
@@ -243,6 +243,17 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
   const drop = useSharedValue(0);
   const dropT = useDerivedValue(() => [{ translateY: drop.value * 300 }]);
   const dropO = useDerivedValue(() => 1 - drop.value);
+  // slice juice: pieces spring apart along the cut, and a bright slash flashes along it
+  const sep = useSharedValue(0);
+  const sepX = useSharedValue(0);
+  const sepY = useSharedValue(0);
+  const sepA = useDerivedValue(() => [{ translateX: (sepX.value * sep.value) / vs.value }, { translateY: (sepY.value * sep.value) / vs.value }]);
+  const sepB = useDerivedValue(() => [{ translateX: (-sepX.value * sep.value) / vs.value }, { translateY: (-sepY.value * sep.value) / vs.value }]);
+  const slash = useSharedValue(0);
+  const slashW = useDerivedValue(() => (2 + 12 * slash.value) / vs.value);
+  const glowW = useDerivedValue(() => (6 + 30 * slash.value) / vs.value);
+  const glowO = useDerivedValue(() => 0.5 * slash.value);
+  const [slashPath, setSlashPath] = useState<SkPath | null>(null);
 
   const stroke = useRef<Pt[]>([]);
   const strokePath = useSharedValue<SkPath>(Skia.Path.Make());
@@ -264,6 +275,22 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
     }
     playSfx("slice");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    // push the pieces apart, perpendicular to the cut
+    const f = pts[0], l = pts[pts.length - 1];
+    let nx = -(l.y - f.y), ny = l.x - f.x;
+    const len = Math.hypot(nx, ny) || 1;
+    nx /= len; ny /= len;
+    const ab = a!.computeTightBounds();
+    if ((ab.x + ab.width / 2 - (f.x + l.x) / 2) * nx + (ab.y + ab.height / 2 - (f.y + l.y) / 2) * ny < 0) { nx = -nx; ny = -ny; }
+    sepX.value = nx; sepY.value = ny;
+    sep.value = 0;
+    sep.value = withSequence(withTiming(22, { duration: 120, easing: Easing.out(Easing.quad) }), withSpring(9, { damping: 7, stiffness: 180 }));
+    const sp = Skia.PathBuilder.Make();
+    sp.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) sp.lineTo(pts[i].x, pts[i].y);
+    setSlashPath(sp.build());
+    slash.value = 1;
+    slash.value = withTiming(0, { duration: 550, easing: Easing.out(Easing.cubic) });
     setPieces([a!, b!]);
     setPhase("choose");
   };
@@ -433,15 +460,27 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
             <Canvas style={{ flex: 1 }}>
               <Group transform={viewT}>
                 <Path path={land} color={C.sand} opacity={0.12} />
-                <Group clip={kept}>
-                  <Path path={land} color={C.sand} />
-                </Group>
+                {!pieces && (
+                  <Group clip={kept}>
+                    <Path path={land} color={C.sand} />
+                  </Group>
+                )}
                 {pieces && (
                   <>
-                    <Group clip={pieces[0]}><Path path={land} color={C.orange} opacity={0.45} /></Group>
-                    <Group clip={pieces[1]}><Path path={land} color={C.teal} opacity={0.45} /></Group>
-                    <Path path={pieces[0]} color={C.orange} style="stroke" strokeWidth={line} />
-                    <Path path={pieces[1]} color={C.teal} style="stroke" strokeWidth={line} />
+                    <Group transform={sepA}>
+                      <Group clip={pieces[0]}><Path path={land} color={C.sand} /><Path path={land} color={C.orange} opacity={0.45} /></Group>
+                      <Path path={pieces[0]} color={C.orange} style="stroke" strokeWidth={line} />
+                    </Group>
+                    <Group transform={sepB}>
+                      <Group clip={pieces[1]}><Path path={land} color={C.sand} /><Path path={land} color={C.teal} opacity={0.45} /></Group>
+                      <Path path={pieces[1]} color={C.teal} style="stroke" strokeWidth={line} />
+                    </Group>
+                  </>
+                )}
+                {slashPath && (
+                  <>
+                    <Path path={slashPath} color={C.orange} style="stroke" strokeWidth={glowW} opacity={glowO} strokeCap="round" strokeJoin="round" />
+                    <Path path={slashPath} color="#FFFFFF" style="stroke" strokeWidth={slashW} opacity={slash} strokeCap="round" strokeJoin="round" />
                   </>
                 )}
                 {!pieces && <Path path={kept} color={C.ink} style="stroke" strokeWidth={line} opacity={0.6}><DashPathEffect intervals={[10, 8]} /></Path>}
