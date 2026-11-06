@@ -414,14 +414,14 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
 
   const headerEl = (
     <>
-      <View style={st.top}>
+      <View style={[st.top, wide && { paddingTop: 0 }]}>
         <Pressable hitSlop={12} onPress={() => router.back()}><Text style={st.back}>‹ Back</Text></Pressable>
         <Text style={st.label} numberOfLines={1}>{label}</Text>
       </View>
-      <View style={st.banner}>
-        <Text style={st.kicker}>FIND & CUT OUT</Text>
-        <Text style={st.target} numberOfLines={1}>{flagOf(target.iso2)} {target.name}</Text>
-        <Text style={[st.muted, { textAlign: "center" }]}>{help}</Text>
+      <View style={[st.banner, wide && { gap: 0, marginTop: -22 }]}>
+        {!wide && <Text style={st.kicker}>FIND & CUT OUT</Text>}
+        <Text style={[st.target, wide && { fontSize: 20 }]} numberOfLines={1}>{flagOf(target.iso2)} {target.name}</Text>
+        <Text style={[st.muted, { textAlign: "center" }, wide && { fontSize: 11 }]}>{help}</Text>
       </View>
     </>
   );
@@ -465,17 +465,17 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
   );
 
   const bottomEl = (
-      <View style={st.bottom}>
+      <View style={[st.bottom, wide && { gap: 4, paddingBottom: 2 }]}>
         {phase === "choose" ? (
           <View style={{ flexDirection: "row", gap: 10 }}>
-            <Pressable onPress={() => removePiece(0)} style={({ pressed }) => [st.primary, { flex: 2, backgroundColor: C.orange }, pressed && { opacity: 0.85 }]}>
-              <Text style={st.primaryText}>{wide ? "Orange" : "Remove orange"}</Text>
+            <Pressable onPress={() => removePiece(0)} style={({ pressed }) => [st.primary, wide && st.slim, { flex: 2, backgroundColor: C.orange }, pressed && { opacity: 0.85 }]}>
+              <Text style={st.primaryText}>Remove orange</Text>
             </Pressable>
-            <Pressable onPress={undo} style={({ pressed }) => [st.ghost, { flex: 1, marginTop: 0 }, pressed && { opacity: 0.85 }]}>
+            <Pressable onPress={undo} style={({ pressed }) => [st.ghost, wide && st.slim, { flex: 1, marginTop: 0 }, pressed && { opacity: 0.85 }]}>
               <Text style={st.ghostText}>↶</Text>
             </Pressable>
-            <Pressable onPress={() => removePiece(1)} style={({ pressed }) => [st.primary, { flex: 2, backgroundColor: C.teal }, pressed && { opacity: 0.85 }]}>
-              <Text style={st.primaryText}>{wide ? "Green" : "Remove green"}</Text>
+            <Pressable onPress={() => removePiece(1)} style={({ pressed }) => [st.primary, wide && st.slim, { flex: 2, backgroundColor: C.teal }, pressed && { opacity: 0.85 }]}>
+              <Text style={st.primaryText}>Remove green</Text>
             </Pressable>
           </View>
         ) : phase === "cut" ? (
@@ -483,14 +483,14 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
             <Pressable
               disabled={history.length === 0}
               onPress={undo}
-              style={({ pressed }) => [st.ghost, { flex: 1, marginTop: 0 }, history.length === 0 && { opacity: 0.35 }, pressed && { opacity: 0.85 }]}
+              style={({ pressed }) => [st.ghost, wide && st.slim, { flex: 1, marginTop: 0 }, history.length === 0 && { opacity: 0.35 }, pressed && { opacity: 0.85 }]}
             >
               <Text style={st.ghostText}>↶ Undo</Text>
             </Pressable>
             <Pressable
               disabled={cuts === 0 || phase !== "cut"}
               onPress={() => { playSfx("tap"); finish(); }}
-              style={({ pressed }) => [st.primary, { flex: 2 }, (cuts === 0 || phase !== "cut") && { opacity: 0.35 }, pressed && { opacity: 0.85 }]}
+              style={({ pressed }) => [st.primary, wide && st.slim, { flex: 2 }, (cuts === 0 || phase !== "cut") && { opacity: 0.35 }, pressed && { opacity: 0.85 }]}
             >
               <Text style={st.primaryText}>Finished ✓</Text>
             </Pressable>
@@ -499,14 +499,14 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
           result && (
             <>
               <View style={st.scoreRow}>
-                <CountUp to={result.score} delay={200} duration={1200} style={st.score} />
+                <CountUp to={result.score} delay={200} duration={1200} style={[st.score, wide && { fontSize: 26 }]} />
                 <Text style={st.bigOf}> / 100</Text>
                 <Text style={st.verdict}>  {verdict(result.score)}</Text>
               </View>
               <Text style={[st.muted, { textAlign: "center" }]}>
                 Over-cut {result.overPct.toFixed(0)}% · Under-cut {result.underPct.toFixed(0)}% · {cuts} cuts
               </Text>
-              <Pressable onPress={() => { playSfx("tap"); onDoneLater.current(); }} style={st.primary}>
+              <Pressable onPress={() => { playSfx("tap"); onDoneLater.current(); }} style={[st.primary, wide && st.slim]}>
                 <Text style={st.primaryText}>{deferDone && result.score < SURVIVE ? "Run over · results" : nextLabel}</Text>
               </Pressable>
             </>
@@ -515,16 +515,8 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
       </View>
   );
 
-  return wide ? (
-    <SafeAreaView style={[st.screen, { flexDirection: "row", paddingHorizontal: 8 }]} edges={["top", "bottom", "left", "right"]}>
-      <View style={{ flex: 1, paddingVertical: 6 }}>{mapEl}</View>
-      <View style={{ width: 280, justifyContent: "space-between", paddingVertical: 4, gap: 8 }}>
-        <View style={{ gap: 8 }}>{headerEl}</View>
-        {bottomEl}
-      </View>
-    </SafeAreaView>
-  ) : (
-    <SafeAreaView style={st.screen} edges={["top", "bottom", "left", "right"]}>
+  return (
+    <SafeAreaView style={[st.screen, wide && { gap: 4 }]} edges={["top", "bottom", "left", "right"]}>
       {headerEl}
       {mapEl}
       {bottomEl}
@@ -544,6 +536,7 @@ const st = StyleSheet.create({
   muted: { fontFamily: F.body, fontSize: 13, color: C.muted },
   mapBox: { flex: 1, borderRadius: 18, borderWidth: 1, borderColor: C.line, backgroundColor: "#0A0D12", overflow: "hidden" },
   bottom: { gap: 8, paddingBottom: 8 },
+  slim: { paddingVertical: 8 },
   primary: { backgroundColor: C.orange, borderRadius: 16, paddingVertical: 15, alignItems: "center" },
   primaryText: { fontFamily: F.bold, color: C.bg, fontSize: 18 },
   ghost: { borderWidth: 2, borderColor: C.ink, borderRadius: 16, paddingVertical: 13, alignItems: "center", marginTop: 4 },
