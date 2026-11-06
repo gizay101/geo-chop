@@ -99,8 +99,12 @@ function scoreKept(kept: SkPath, target: SkPath, land: SkPath) {
     }
   }
   const under = inT - hit;
-  const iou = inT + over > 0 ? hit / (inT + over) : 0;
-  return { score: Math.round(100 * iou * 10) / 10, overPct: inT ? (over / inT) * 100 : 0, underPct: inT ? (under / inT) * 100 : 0 };
+  // over-cut costs half as much as under-cut; keeping the whole country is always worth at least 10
+  const OVER_WEIGHT = 0.5;
+  const fit = inT + over > 0 ? hit / (inT + OVER_WEIGHT * over) : 0;
+  let score = 100 * Math.min(1, fit);
+  if (inT > 0 && under <= inT * 0.01) score = Math.max(10, score);
+  return { score: Math.round(score * 10) / 10, overPct: inT ? (over / inT) * 100 : 0, underPct: inT ? (under / inT) * 100 : 0 };
 }
 
 const verdict = (s: number) => (s >= 90 ? "Surgical!" : s >= 70 ? "Clean cut" : s >= 45 ? "Rough cut" : "You are chopped!");
