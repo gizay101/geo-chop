@@ -2,6 +2,7 @@
 // /find (hub) · /find?mode=daily · /find?mode=onslaught
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { LayoutChangeEvent, Pressable, StyleSheet, Text, View } from "react-native";
+import { useWindowDimensions } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Canvas, DashPathEffect, FillType, Group, Path, Skia, type SkPath } from "@shopify/react-native-skia";
@@ -405,12 +406,14 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
       if (phase === "cut" && pts.length >= 3) doCut(pts);
     });
 
+  const { width: winW, height: winH } = useWindowDimensions();
+  const wide = winW > winH;
   const help =
     phase === "cut" ? (cuts ? "Keep cutting, or press Finished." : "Swipe to slice · hold then drag to move · pinch to zoom")
     : phase === "choose" ? "Remove orange or green (or tap a piece)." : "";
 
-  return (
-    <SafeAreaView style={st.screen} edges={["top", "bottom", "left", "right"]}>
+  const headerEl = (
+    <>
       <View style={st.top}>
         <Pressable hitSlop={12} onPress={() => router.back()}><Text style={st.back}>‹ Back</Text></Pressable>
         <Text style={st.label} numberOfLines={1}>{label}</Text>
@@ -418,9 +421,12 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
       <View style={st.banner}>
         <Text style={st.kicker}>FIND & CUT OUT</Text>
         <Text style={st.target} numberOfLines={1}>{flagOf(target.iso2)} {target.name}</Text>
-        <Text style={st.muted}>{help}</Text>
+        <Text style={[st.muted, { textAlign: "center" }]}>{help}</Text>
       </View>
+    </>
+  );
 
+  const mapEl = (
       <View style={st.mapBox} onLayout={onLayout}>
         {size.w > 0 && (
           <GestureDetector gesture={Gesture.Simultaneous(pan, pinch)}>
@@ -456,18 +462,20 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
           </GestureDetector>
         )}
       </View>
+  );
 
+  const bottomEl = (
       <View style={st.bottom}>
         {phase === "choose" ? (
           <View style={{ flexDirection: "row", gap: 10 }}>
             <Pressable onPress={() => removePiece(0)} style={({ pressed }) => [st.primary, { flex: 2, backgroundColor: C.orange }, pressed && { opacity: 0.85 }]}>
-              <Text style={st.primaryText}>Remove orange</Text>
+              <Text style={st.primaryText}>{wide ? "Orange" : "Remove orange"}</Text>
             </Pressable>
             <Pressable onPress={undo} style={({ pressed }) => [st.ghost, { flex: 1, marginTop: 0 }, pressed && { opacity: 0.85 }]}>
               <Text style={st.ghostText}>↶</Text>
             </Pressable>
             <Pressable onPress={() => removePiece(1)} style={({ pressed }) => [st.primary, { flex: 2, backgroundColor: C.teal }, pressed && { opacity: 0.85 }]}>
-              <Text style={st.primaryText}>Remove green</Text>
+              <Text style={st.primaryText}>{wide ? "Green" : "Remove green"}</Text>
             </Pressable>
           </View>
         ) : phase === "cut" ? (
@@ -505,6 +513,21 @@ function FindRound({ target, label, onDone, nextLabel, deferDone }: { target: Fe
           )
         )}
       </View>
+  );
+
+  return wide ? (
+    <SafeAreaView style={[st.screen, { flexDirection: "row", paddingHorizontal: 8 }]} edges={["top", "bottom", "left", "right"]}>
+      <View style={{ flex: 1, paddingVertical: 6 }}>{mapEl}</View>
+      <View style={{ width: 280, justifyContent: "space-between", paddingVertical: 4, gap: 8 }}>
+        <View style={{ gap: 8 }}>{headerEl}</View>
+        {bottomEl}
+      </View>
+    </SafeAreaView>
+  ) : (
+    <SafeAreaView style={st.screen} edges={["top", "bottom", "left", "right"]}>
+      {headerEl}
+      {mapEl}
+      {bottomEl}
     </SafeAreaView>
   );
 }
