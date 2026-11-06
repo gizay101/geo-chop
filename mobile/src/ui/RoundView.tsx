@@ -275,6 +275,6 @@ const makeStyles = (t: Theme, w = false) =>
     grade: { fontSize: 16, fontWeight: "800", color: t.ink },
     muted: { color: t.muted, fontWeight: "500", fontSize: 13 },
     btnRow: { flexDirection: "row", gap: 10 },
-    ghostBtn: { flex: 1, borderWidth: 2, borderColor: t.ink, borderRadius: 14, paddingVertical: w ? 7 : 10, paddingHorizontal: w ? 16 : 0, alignItems: "center" },
+    ghostBtn: { flex: w ? 0 : 1, borderWidth: 2, borderColor: t.ink, borderRadius: 14, paddingVertical: w ? 7 : 10, paddingHorizontal: w ? 16 : 0, alignItems: "center" },
     ghostText: { color: t.ink, fontWeight: "800" },
   });
