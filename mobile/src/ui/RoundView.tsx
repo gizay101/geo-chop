@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -113,7 +113,8 @@ export function RoundView({ country, tool = "free", label, allowRetry, nextLabel
     setResetKey((k) => k + 1);
   };
 
-  const s = makeStyles(theme);
+  const win = useWindowDimensions();
+  const s = makeStyles(theme, win.width > win.height);
 
   return (
     <SafeAreaView style={s.screen} edges={["top", "bottom"]}>
@@ -236,44 +237,44 @@ export function RoundView({ country, tool = "free", label, allowRetry, nextLabel
   );
 }
 
-const makeStyles = (t: Theme) =>
+const makeStyles = (t: Theme, w = false) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: t.paper },
-    header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 20, paddingTop: 8 },
+    header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 20, paddingTop: w ? 0 : 8 },
     back: { fontSize: 17, fontWeight: "800", color: t.ink },
     label: { fontSize: 13, fontWeight: "700", color: t.muted },
-    titleRow: { alignItems: "center", paddingTop: 10, paddingHorizontal: 16 },
-    country: { fontSize: 28, fontWeight: "900", color: t.ink, textAlign: "center" },
+    titleRow: { alignItems: "center", paddingTop: w ? 0 : 10, marginTop: w ? -20 : 0, paddingHorizontal: 16 },
+    country: { fontSize: w ? 20 : 28, fontWeight: "900", color: t.ink, textAlign: "center" },
     goal: {
-      marginTop: 6,
-      fontSize: 14,
+      marginTop: w ? 2 : 6,
+      fontSize: w ? 12 : 14,
       fontWeight: "700",
       color: t.ink,
       backgroundColor: t.card,
       paddingHorizontal: 12,
-      paddingVertical: 5,
+      paddingVertical: w ? 2 : 5,
       borderRadius: 999,
       overflow: "hidden",
     },
-    note: { marginTop: 6, fontSize: 11, color: t.muted, minHeight: 14 },
+    note: { marginTop: w ? 0 : 6, fontSize: 11, color: t.muted, minHeight: w ? 0 : 14 },
     canvas: { flex: 1 },
-    bottom: { height: 214, paddingHorizontal: 20, paddingBottom: 12, gap: 10, justifyContent: "flex-end" },
-    resultBox: { gap: 8 },
-    actions: { gap: 10 },
-    help: { textAlign: "center", color: t.muted, fontSize: 14 },
-    chopBtn: { backgroundColor: t.ink, borderRadius: 16, paddingVertical: 16, alignItems: "center" },
-    chopText: { color: t.paper, fontSize: 20, fontWeight: "900", letterSpacing: 1 },
+    bottom: { height: w ? 150 : 214, paddingHorizontal: 20, paddingBottom: w ? 4 : 12, gap: w ? 4 : 10, justifyContent: "flex-end" },
+    resultBox: { gap: w ? 2 : 8 },
+    actions: { gap: w ? 4 : 10 },
+    help: { textAlign: "center", color: t.muted, fontSize: w ? 12 : 14 },
+    chopBtn: { backgroundColor: t.ink, borderRadius: 16, paddingVertical: w ? 8 : 16, alignItems: "center" },
+    chopText: { color: t.paper, fontSize: w ? 16 : 20, fontWeight: "900", letterSpacing: 1 },
     btnDisabled: { opacity: 0.3 },
     pressed: { transform: [{ scale: 0.97 }], opacity: 0.85 },
     splitRow: { flexDirection: "row", justifyContent: "center", alignItems: "baseline", gap: 14 },
-    pct: { fontSize: 40, fontWeight: "900", fontVariant: ["tabular-nums"] },
-    vs: { fontSize: 32, color: t.muted },
+    pct: { fontSize: w ? 26 : 40, fontWeight: "900", fontVariant: ["tabular-nums"] },
+    vs: { fontSize: w ? 22 : 32, color: t.muted },
     scoreRow: { flexDirection: "row", justifyContent: "center", alignItems: "baseline", flexWrap: "wrap" },
     scoreNum: { fontSize: 22, fontWeight: "900", color: t.gold, fontVariant: ["tabular-nums"] },
     scoreOf: { fontSize: 16, fontWeight: "700", color: t.muted },
     grade: { fontSize: 16, fontWeight: "800", color: t.ink },
     muted: { color: t.muted, fontWeight: "500", fontSize: 13 },
     btnRow: { flexDirection: "row", gap: 10 },
-    ghostBtn: { flex: 1, borderWidth: 2, borderColor: t.ink, borderRadius: 14, paddingVertical: 10, alignItems: "center" },
+    ghostBtn: { flex: 1, borderWidth: 2, borderColor: t.ink, borderRadius: 14, paddingVertical: w ? 5 : 10, alignItems: "center" },
     ghostText: { color: t.ink, fontWeight: "800" },
   });

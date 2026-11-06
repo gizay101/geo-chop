@@ -102,7 +102,7 @@ function polylinePath(pts: Pt[]): SkPath {
 export function ChopCanvas({ country, theme, tool, chopped, shareA, perfect, celebrate, resetKey, onCutChange }: Props) {
   const [size, setSize] = useState({ w: 0, h: 0 });
   const baseFit = useMemo<Fit>(() => {
-    const s = Math.max(1, Math.min((size.w - 2 * PAD) / country.width, (size.h - 2 * PAD) / country.height));
+    const s = Math.max(0.05, Math.min((size.w - 2 * PAD) / country.width, (size.h - 2 * PAD) / country.height));
     return { s, ox: (size.w - s * country.width) / 2, oy: (size.h - s * country.height) / 2 };
   }, [size, country]);
 
